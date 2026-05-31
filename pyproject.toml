@@ -1,7 +1,10 @@
 [project]
-name = "fdi-sbc-25daa"
+name = "fdi-sbc-25DAA"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "click>=8.4.1",
+    "pyparsing>=3.3.2",
+]
