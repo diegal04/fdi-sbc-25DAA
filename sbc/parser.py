@@ -1,12 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
-from pyparsing import Word, srange, Group, Suppress, Optional, delimitedList, Keyword, Combine
+from pyparsing import (Word, srange, Group, Suppress, Optional, delimitedList, 
+                       Keyword, Combine, pythonStyleComment)
 
 # ==========================================
 # 1. ESTRUCTURAS DE DATOS (Dataclasses)
 # ==========================================
-# Las dataclasses son recomendadas en las normas. 
-# Nos sirven para guardar la información ya procesada de forma limpia.
 
 @dataclass
 class Tripleta:
@@ -15,51 +14,105 @@ class Tripleta:
     objeto: str
 
 @dataclass
+class Restriccion:
+    variable: str
+    operador: str
+    valor: int
+
+@dataclass
 class Hecho:
     tripleta: Tripleta
-    certeza: float = 1.0  # Aquí guardaremos el valor de la Tarea 8 (Lógica Difusa)
-    negado: bool = False  # Para hechos que empiezan por "no"
+    certeza: float = 1.0  
+    negado: bool = False  
 
 @dataclass
 class Regla:
     consecuente: Tripleta
     antecedentes: List[Tripleta]
-    certeza: float = 1.0  # Para reglas difusas
+    certeza: float = 1.0
+    # Nueva lista para guardar las desigualdades (Tarea 7)
+    restricciones: List[Restriccion] = field(default_factory=list)
+
+@dataclass
+class Consulta:
+    tripleta: Tripleta
+    razona_si: bool = False # Si es True, usará encadenamiento hacia atrás
 
 # ==========================================
 # 2. GRAMÁTICA PYPARSING (Traducción EBNF)
 # ==========================================
 
-# Definimos qué es un literal (minúsculas) y una variable (Empieza por mayúscula)
+# Ignorar comentarios (todo lo que empiece por # hasta el final de la línea)
+comentario = pythonStyleComment
+
+# Literales y Variables
 literal = Word(srange("[a-z]"), srange("[a-zA-Z0-9_]"))
 variable = Word(srange("[A-Z]"), srange("[a-zA-Z0-9_]"))
 termino = literal | variable
 
-# Una tripleta son tres términos seguidos. 
-# set_parse_action convierte el resultado del texto directamente en nuestra Dataclass 'Tripleta'
+# Tripleta base
 tripleta = Group(termino + termino + termino)
 tripleta.set_parse_action(lambda t: Tripleta(t[0][0], t[0][1], t[0][2]))
 
-# --- Extensión: Lógica Difusa ---
-# Busca números como "0.85" o "1".
+# --- Extensiones (Lógica Difusa y Restricciones) ---
 numero_difuso = Combine(Keyword("0.") + Word(srange("[0-9]")) | Keyword("1"))
-extension_difusa = Suppress("[") + numero_difuso + Suppress("]")
-extension_difusa.set_parse_action(lambda t: float(t[0]))
+extension_difusa = numero_difuso.copy().set_parse_action(lambda t: float(t[0]))
 
-# --- Parseo de Hechos (Afirmaciones) ---
-# Sintaxis: tripleta . [ extension ]
-afirmacion = tripleta + Suppress(".") + Optional(extension_difusa, default=1.0)
-afirmacion.set_parse_action(lambda t: Hecho(tripleta=t[0], certeza=t[1]))
+operador = Keyword("<=") | Keyword(">=") | Keyword("<") | Keyword(">") | Keyword("=")
+entero = Word(srange("[0-9]")).set_parse_action(lambda t: int(t[0]))
+restriccion = variable + operador + entero
+restriccion.set_parse_action(lambda t: Restriccion(t[0], t[1], t[2]))
+
+# Agrupamos las extensiones entre corchetes separados por punto y coma
+extension_item = extension_difusa | restriccion
+extension_grupo = Group(Suppress("[") + delimitedList(extension_item, delim=";") + Suppress("]"))
+
+# --- Parseo de Hechos (Afirmaciones y Negaciones) ---
+afirmacion = tripleta + Suppress(".") + Optional(extension_grupo, default=[])
+def procesar_afirmacion(t):
+    certeza = 1.0
+    for ext in t[1]: # Busca si en los corchetes hay un número de lógica difusa
+        if isinstance(ext, float): certeza = ext
+    return Hecho(tripleta=t[0], certeza=certeza)
+afirmacion.set_parse_action(procesar_afirmacion)
+
+negacion = Keyword("no") + tripleta + Suppress(".")
+negacion.set_parse_action(lambda t: Hecho(tripleta=t[1], negado=True))
+
+# Cualquiera de las dos formas es un hecho válido
+hecho_parser = afirmacion | negacion
+
+# --- Parseo de Consultas ---
+consulta_simple = tripleta + Suppress("?")
+consulta_simple.set_parse_action(lambda t: Consulta(tripleta=t[0], razona_si=False))
+
+consulta_razona = Suppress("razona si") + tripleta + Suppress("?")
+consulta_razona.set_parse_action(lambda t: Consulta(tripleta=t[0], razona_si=True))
+
+consulta_parser = consulta_razona | consulta_simple
 
 # --- Parseo de Reglas ---
-# Sintaxis: tripleta <- tripleta , tripleta . [ extension ]
-reglas_texto = tripleta + Suppress("<-") + delimitedList(tripleta) + Suppress(".") + Optional(extension_difusa, default=1.0)
+antecedentes_grupo = Group(delimitedList(tripleta))
+reglas_parser = tripleta + Suppress("<-") + antecedentes_grupo + Suppress(".") + Optional(extension_grupo, default=[])
 
 def procesar_regla(t):
-    # El primer elemento es el consecuente, el último la certeza, lo del medio son los antecedentes
     consecuente = t[0]
-    certeza = t[-1]
-    antecedentes = list(t[1:-1])
-    return Regla(consecuente=consecuente, antecedentes=antecedentes, certeza=certeza)
+    antecedentes = list(t[1])
+    certeza = 1.0
+    restricciones = []
+    
+    # Clasificamos qué hay dentro de los corchetes finales
+    for ext in t[2]:
+        if isinstance(ext, float):
+            certeza = ext
+        elif isinstance(ext, Restriccion):
+            restricciones.append(ext)
+            
+    return Regla(consecuente, antecedentes, certeza, restricciones)
 
-reglas_texto.set_parse_action(procesar_regla)
+reglas_parser.set_parse_action(procesar_regla)
+
+# Para ignorar los comentarios en cualquier parte del archivo
+hecho_parser.ignore(comentario)
+reglas_parser.ignore(comentario)
+consulta_parser.ignore(comentario)
