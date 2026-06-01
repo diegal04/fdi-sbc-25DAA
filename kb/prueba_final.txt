@@ -1,0 +1,57 @@
+# =================================================================
+# CASO EXTREMO: EL ASESINATO EN LA MANSION (PRUEBA DE ESTRÉS DEL SBC)
+# =================================================================
+
+# --- 1. ONTOLOGÍA (Evitar deducciones absurdas) ---
+coronel_mostaza es_tipo persona.
+senora_blanco es_tipo persona.
+profesor_prado es_tipo persona.
+candelabro es_tipo objeto.
+veneno es_tipo objeto.
+
+# --- 2. HECHOS INICIALES Y LÓGICA DIFUSA (Test de certezas) ---
+# Mostaza tiene un motivo muy claro. Blanco tiene un motivo dudoso.
+coronel_mostaza tiene_motivo si. [ 1 ]
+senora_blanco tiene_motivo si. [ 0.4 ]
+
+# Posiciones en la mansión
+coronel_mostaza esta_en biblioteca.
+candelabro esta_en biblioteca.
+senora_blanco esta_en cocina.
+veneno esta_en cocina.
+profesor_prado esta_en salon.
+
+# Pistas físicas (Test de acumulación difusa)
+candelabro tiene_sangre si. [ 0.8 ]
+veneno falta_dosis si. [ 0.9 ]
+victima sufre contusion.
+
+# --- 3. LÍNEAS TEMPORALES (Casos extremos matemáticos) ---
+# El asesinato ocurrió exactamente a las 22:00 (2200).
+# CASO EXTREMO A: Prado llega mucho antes.
+profesor_prado llega_casa 2000.
+# CASO EXTREMO B: Blanco llega EXACTAMENTE a la hora del crimen (Límite matemático <=).
+senora_blanco llega_casa 2200.
+# CASO EXTREMO C: Mostaza llega después.
+coronel_mostaza llega_casa 2330.
+
+# --- 4. REGLAS MULTI-CONDICIÓN Y MIXTAS ---
+
+# Regla 1: Identificación de arma (Test de múltiples antecedentes)
+# Un objeto es arma homicida si hubo contusión Y tiene sangre. Fiabilidad: 90%.
+X es arma_homicida <- victima sufre contusion, X tiene_sangre si. [ 0.9 ]
+
+# Regla 2 y 3: Coartadas con Restricciones Aritméticas (Test de límites)
+# Si llega DESPUÉS de las 2200, NO tiene coartada.
+P tiene_coartada no <- P llega_casa Hora. [ Hora > 2200 ]
+# Si llega a las 2200 o ANTES, SÍ tiene coartada.
+P tiene_coartada si <- P llega_casa Hora. [ Hora <= 2200 ]
+
+# Regla 4: Regla Mixta (Test Difuso + Matemático simultáneo)
+# Alguien es sospechoso si no tiene coartada Y está con el arma. Fiabilidad 80%.
+# Usamos el operador ';' que programamos en el parser para unir extensiones.
+P es sospechoso <- P es_tipo persona, P esta_en Hab, Arma esta_en Hab, Arma es arma_homicida. [ 0.8 ]
+
+# Regla 5: Conclusión Final
+# Es el asesino si es sospechoso Y tiene motivo.
+P es asesino <- P es sospechoso, P tiene_motivo si. [ 1 ]

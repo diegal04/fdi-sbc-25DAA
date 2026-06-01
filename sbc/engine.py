@@ -134,13 +134,16 @@ class MotorInferencia:
             sust_regla = unificar(regla.consecuente, objetivo, {})
             
             if sust_regla is not None:
-                for sust_final, certeza_final in self._verificar_antecedentes_atras(
+                # Calculamos SOLO el mínimo de los antecedentes partiendo de 1.0
+                for sust_final, certeza_antecedentes in self._verificar_antecedentes_atras(
                     antecedentes=regla.antecedentes,
                     sust_actual=sust_regla,
                     restricciones=regla.restricciones,
-                    certeza_acumulada=regla.certeza,
+                    certeza_acumulada=1.0, 
                     nivel=nivel + 1
                 ):
+                    # APLICAMOS LA REGLA MULTIPLICANDO (¡Igual que hacia adelante!)
+                    certeza_final = certeza_antecedentes * regla.certeza
                     # LIMPIEZA DE COLISIONES: Solo devolvemos al usuario las variables 
                     # que originalmente estaban en su consulta.
                     vars_objetivo = [t for t in [objetivo.sujeto, objetivo.predicado, objetivo.objeto] if es_variable(t)]
