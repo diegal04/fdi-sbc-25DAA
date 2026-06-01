@@ -46,7 +46,7 @@ class Consulta:
 comentario = pythonStyleComment
 
 # Literales y Variables
-literal = Word(srange("[a-z]"), srange("[a-zA-Z0-9_]"))
+literal = Word(srange("[a-z0-9]"), srange("[a-zA-Z0-9_]"))
 variable = Word(srange("[A-Z]"), srange("[a-zA-Z0-9_]"))
 termino = literal | variable
 

@@ -29,9 +29,9 @@ class Memoria:
             # Obligamos a leer en UTF-8, requisito técnico estricto de las normas
             texto = ruta.read_text(encoding="utf-8")
             
-            # parseAll=True es vital: si hay una sola letra mal puesta en el txt,
+            # parse_all=True es vital: si hay una sola letra mal puesta en el txt,
             # en vez de ignorarla, pyparsing lanzará una excepción para avisarnos.
-            resultados = archivo_parser.parseString(texto, parseAll=True)
+            resultados = archivo_parser.parse_string(texto, parse_all=True)
 
             # Clasificamos lo que el parser ha leído
             for item in resultados:

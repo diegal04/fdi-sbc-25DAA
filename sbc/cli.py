@@ -5,6 +5,7 @@ from pyparsing import ParseException
 # Importamos nuestro "cerebro" y las piezas individuales del parser
 from sbc.memory import Memoria
 from sbc.parser import Hecho, Regla, Consulta, hecho_parser, reglas_parser, consulta_parser
+from sbc.engine import MotorInferencia
 
 # Creamos el parser combinado aquí mismo
 declaracion = reglas_parser | hecho_parser | consulta_parser
@@ -12,6 +13,7 @@ declaracion = reglas_parser | hecho_parser | consulta_parser
 # Iniciamos la consola de colores y la memoria de trabajo
 console = Console()
 memoria = Memoria()
+motor = MotorInferencia(memoria)
 
 def procesar_entrada(texto: str) -> bool:
     """Evalúa lo que escribe el usuario. Devuelve False si hay que salir."""
@@ -51,7 +53,13 @@ def procesar_entrada(texto: str) -> bool:
         return True
         
     elif texto == "descubrir!":
-        console.print("[yellow]Motor de encadenamiento hacia adelante (En construcción...)[/yellow]")
+        console.print("[bold yellow]Iniciando motor de inferencia (Encadenamiento hacia adelante)...[/bold yellow]")
+        descubiertos = motor.encadenamiento_hacia_adelante()
+        
+        if descubiertos > 0:
+            console.print(f"[bold green]¡Eureka! El detective ha deducido {descubiertos} nuevos hechos.[/bold green]")
+        else:
+            console.print("[dim]El detective no ha podido sacar ninguna conclusión nueva con las pruebas actuales.[/dim]")
         return True
         
     elif texto == "memoria!":
@@ -67,7 +75,7 @@ def procesar_entrada(texto: str) -> bool:
     # 2. CONOCIMIENTO Y CONSULTAS (Hechos, Reglas, Preguntas)
     try:
         # Intentamos traducir lo que ha escrito usando el parser
-        resultado = declaracion.parseString(texto, parseAll=True)[0]
+        resultado = declaracion.parse_string(texto, parse_all=True)[0]
         
         if isinstance(resultado, Hecho):
             memoria.agregar_hecho(resultado)
