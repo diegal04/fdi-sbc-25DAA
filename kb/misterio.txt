@@ -1,0 +1,6 @@
+# Hechos iniciales de la escena del crimen
+coronel_mostaza esta_en biblioteca.
+testigo_ciego ve_a coronel_mostaza. [ 0.4 ]
+
+# Regla de prueba
+coronel_mostaza es sospechoso <- coronel_mostaza esta_en biblioteca.

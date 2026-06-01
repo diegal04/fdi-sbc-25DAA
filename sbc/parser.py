@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
 from pyparsing import (Word, srange, Group, Suppress, Optional, delimitedList, 
-                       Keyword, Combine, pythonStyleComment)
+                       Literal, Keyword, Combine, pythonStyleComment)
 
 # ==========================================
 # 1. ESTRUCTURAS DE DATOS (Dataclasses)
@@ -55,10 +55,10 @@ tripleta = Group(termino + termino + termino)
 tripleta.set_parse_action(lambda t: Tripleta(t[0][0], t[0][1], t[0][2]))
 
 # --- Extensiones (Lógica Difusa y Restricciones) ---
-numero_difuso = Combine(Keyword("0.") + Word(srange("[0-9]")) | Keyword("1"))
+numero_difuso = Combine(Literal("0.") + Word(srange("[0-9]")) | Literal("1"))
 extension_difusa = numero_difuso.copy().set_parse_action(lambda t: float(t[0]))
 
-operador = Keyword("<=") | Keyword(">=") | Keyword("<") | Keyword(">") | Keyword("=")
+operador = Literal("<=") | Literal(">=") | Literal("<") | Literal(">") | Literal("=")
 entero = Word(srange("[0-9]")).set_parse_action(lambda t: int(t[0]))
 restriccion = variable + operador + entero
 restriccion.set_parse_action(lambda t: Restriccion(t[0], t[1], t[2]))

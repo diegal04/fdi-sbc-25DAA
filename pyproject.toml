@@ -8,4 +8,5 @@ dependencies = [
     "click>=8.4.1",
     "loguru>=0.7.3",
     "pyparsing>=3.3.2",
+    "rich>=15.0.0",
 ]
