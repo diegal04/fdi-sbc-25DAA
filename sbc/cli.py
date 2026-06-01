@@ -2,12 +2,11 @@ import click
 from rich.console import Console
 from pyparsing import ParseException
 
-# Importamos nuestro "cerebro" y las piezas individuales del parser
 from sbc.memory import Memoria
 from sbc.parser import Hecho, Regla, Consulta, hecho_parser, reglas_parser, consulta_parser
 from sbc.engine import MotorInferencia
 
-# Creamos el parser combinado aquí mismo
+# Creamos el parser combinado
 declaracion = reglas_parser | hecho_parser | consulta_parser
 
 # Iniciamos la consola de colores y la memoria de trabajo
@@ -30,7 +29,6 @@ def procesar_entrada(texto: str) -> bool:
         console.print("\n[bold magenta]--- MANUAL DEL DETECTIVE (AYUDA) ---[/bold magenta]")
         console.print("[bold]1. Añadir Hechos (Acaban en punto):[/bold]")
         console.print("   [cyan]coronel_mostaza esta_en biblioteca.[/cyan]")
-        # Fíjate en la 'r' antes de las comillas para evitar el SyntaxWarning
         console.print(r"   [dim]- Con incertidumbre:[/dim] [cyan]testigo ve_a asesino. \[ 0.8 ][/cyan]")
         console.print("[bold]2. Revocar Hechos (Empiezan por no):[/bold]")
         console.print("   [cyan]no coronel_mostaza esta_en biblioteca.[/cyan]")
@@ -63,7 +61,6 @@ def procesar_entrada(texto: str) -> bool:
         return True
         
     elif texto == "memoria!":
-        # Un comando extra súper útil para ti durante el desarrollo
         console.print(f"[bold magenta]--- MEMORIA DE TRABAJO ---[/bold magenta]")
         console.print(f"Hechos: {len(memoria.hechos)} | Reglas: {len(memoria.reglas)}")
         for h in memoria.hechos:
@@ -90,9 +87,35 @@ def procesar_entrada(texto: str) -> bool:
             
         elif isinstance(resultado, Consulta):
             if resultado.razona_si:
-                console.print("[yellow]Motor de encadenamiento hacia atrás (En construcción...)[/yellow]")
+                # --- ENCADENAMIENTO HACIA ATRÁS ACTIVADO ---
+                console.print(f"[bold yellow]Razonando hipótesis: {resultado.tripleta.sujeto} {resultado.tripleta.predicado} {resultado.tripleta.objeto}[/bold yellow]")
+                
+                # Lanzamos el algoritmo recursivo
+                generador = motor.encadenamiento_hacia_atras(resultado.tripleta)
+                resultados = list(generador)
+                
+                if not resultados:
+                    console.print("[bold red]HIPÓTESIS DENEGADA[/bold red] (No hay pruebas para demostrarlo)")
+                else:
+                    from sbc.engine import es_variable
+                    vars_consulta = [t for t in [resultado.tripleta.sujeto, resultado.tripleta.predicado, resultado.tripleta.objeto] if es_variable(t)]
+                    
+                    if not vars_consulta:
+                        # Si no hay variables, es una comprobación directa
+                        certeza_max = max(r[1] for r in resultados)
+                        console.print(f"[bold green]HIPÓTESIS CONFIRMADA[/bold green] [dim](Certeza: {certeza_max:.2f})[/dim]")
+                    else:
+                        # Si hay variables, mostramos quién es el culpable
+                        console.print("[bold green]Hipótesis demostrada para:[/bold green]")
+                        mostrados = set()
+                        for sust, certeza in resultados:
+                            # Filtramos para mostrar solo las variables que preguntó el usuario
+                            linea = ", ".join([f"[cyan]{k}[/cyan] = [white]{v}[/white]" for k, v in sust.items() if k in vars_consulta])
+                            if linea and linea not in mostrados:
+                                console.print(f"  {linea} [dim](Certeza: {certeza:.2f})[/dim]")
+                                mostrados.add(linea)
             else:
-                # --- BUSCADOR DE HECHOS ACTIVADO ---
+                # --- BUSCADOR DE HECHOS ---
                 from sbc.engine import es_variable
                 
                 # Le pedimos al motor que busque en la memoria
