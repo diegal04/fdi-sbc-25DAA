@@ -88,28 +88,29 @@ def procesar_entrada(texto: str) -> bool:
         elif isinstance(resultado, Consulta):
             if resultado.razona_si:
                 # --- ENCADENAMIENTO HACIA ATRÁS ACTIVADO ---
-                console.print(f"[bold yellow]Razonando hipótesis: {resultado.tripleta.sujeto} {resultado.tripleta.predicado} {resultado.tripleta.objeto}[/bold yellow]")
+                console.print(f"[bold yellow]Razonando: {resultado.tripleta.sujeto} {resultado.tripleta.predicado} {resultado.tripleta.objeto}[/bold yellow]")
                 
-                # Lanzamos el algoritmo recursivo
                 generador = motor.encadenamiento_hacia_atras(resultado.tripleta)
                 resultados = list(generador)
                 
+                # Extraemos las variables ANTES para saber qué tipo de pregunta nos han hecho
+                from sbc.engine import es_variable
+                vars_consulta = [t for t in [resultado.tripleta.sujeto, resultado.tripleta.predicado, resultado.tripleta.objeto] if es_variable(t)]
+                
                 if not resultados:
-                    console.print("[bold red]HIPÓTESIS DENEGADA[/bold red] (No hay pruebas para demostrarlo)")
-                else:
-                    from sbc.engine import es_variable
-                    vars_consulta = [t for t in [resultado.tripleta.sujeto, resultado.tripleta.predicado, resultado.tripleta.objeto] if es_variable(t)]
-                    
+                    # Mensajes de error personalizados según el tipo de pregunta
                     if not vars_consulta:
-                        # Si no hay variables, es una comprobación directa
+                        console.print("[bold red]HIPÓTESIS DENEGADA[/bold red] (No hay pruebas para demostrarlo)")
+                    else:
+                        console.print("[bold red]SIN RESULTADOS[/bold red] (No hay datos en la base de datos que cumplan las condiciones)")
+                else:
+                    if not vars_consulta:
                         certeza_max = max(r[1] for r in resultados)
                         console.print(f"[bold green]HIPÓTESIS CONFIRMADA[/bold green] [dim](Certeza: {certeza_max:.2f})[/dim]")
                     else:
-                        # Si hay variables, mostramos quién es el culpable
-                        console.print("[bold green]Hipótesis demostrada para:[/bold green]")
+                        console.print("[bold green]Soluciones encontradas:[/bold green]")
                         mostrados = set()
                         for sust, certeza in resultados:
-                            # Filtramos para mostrar solo las variables que preguntó el usuario
                             linea = ", ".join([f"[cyan]{k}[/cyan] = [white]{v}[/white]" for k, v in sust.items() if k in vars_consulta])
                             if linea and linea not in mostrados:
                                 console.print(f"  {linea} [dim](Certeza: {certeza:.2f})[/dim]")
