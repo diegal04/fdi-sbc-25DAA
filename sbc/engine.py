@@ -65,6 +65,19 @@ class MotorInferencia:
     def __init__(self, memoria: Memoria):
         self.memoria = memoria
 
+    def consultar_hechos(self, consulta: Tripleta) -> List[Tuple[Sustitucion, float]]:
+        """
+        Busca directamente en la memoria de hechos qué elementos unifican 
+        con la consulta, sin disparar reglas (Tarea de búsqueda simple).
+        """
+        resultados = []
+        for hecho in self.memoria.hechos:
+            # Intentamos unificar la consulta (que puede tener variables) con el hecho real
+            sust = unificar(consulta, hecho.tripleta, {})
+            if sust is not None:
+                resultados.append((sust, hecho.certeza))
+        return resultados
+    
     def _buscar_combinaciones(self, antecedentes: List[Tripleta], sust_actual: Sustitucion) -> Generator[Tuple[Sustitucion, float], None, None]:
         """
         Función recursiva que busca todas las combinaciones de hechos que cumplan

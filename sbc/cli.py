@@ -92,7 +92,29 @@ def procesar_entrada(texto: str) -> bool:
             if resultado.razona_si:
                 console.print("[yellow]Motor de encadenamiento hacia atrás (En construcción...)[/yellow]")
             else:
-                console.print("[yellow]Buscador de hechos (En construcción...)[/yellow]")
+                # --- BUSCADOR DE HECHOS ACTIVADO ---
+                from sbc.engine import es_variable
+                
+                # Le pedimos al motor que busque en la memoria
+                resultados = motor.consultar_hechos(resultado.tripleta)
+                
+                if not resultados:
+                    console.print("[bold red]FALSO / DESCONOCIDO[/bold red] (No se encuentra en la memoria)")
+                else:
+                    # Comprobamos si la pregunta del usuario incluía variables (Mayúsculas)
+                    tiene_vars = any(es_variable(t) for t in [resultado.tripleta.sujeto, resultado.tripleta.predicado, resultado.tripleta.objeto])
+                    
+                    if not tiene_vars:
+                        # Caso A: Pregunta directa de Sí/No
+                        certeza = max(r[1] for r in resultados)
+                        console.print(f"[bold green]VERDADERO[/bold green] [dim](Certeza: {certeza:.2f})[/dim]")
+                    else:
+                        # Caso B: Pregunta de rellenar huecos (Variables)
+                        console.print("[bold green]Soluciones encontradas en memoria:[/bold green]")
+                        for sust, certeza in resultados:
+                            # Formateamos bonito: "X = coronel_mostaza"
+                            linea_sust = ", ".join([f"[cyan]{k}[/cyan] = [white]{v}[/white]" for k, v in sust.items()])
+                            console.print(f"  {linea_sust} [dim](Certeza: {certeza:.2f})[/dim]")
                 
     except ParseException:
         console.print("[red]Error de sintaxis. Revisa el formato (¿Te ha faltado el punto o interrogación final?)[/red]")
