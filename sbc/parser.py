@@ -1,11 +1,22 @@
 from dataclasses import dataclass, field
 from typing import List
-from pyparsing import (Word, srange, Group, Suppress, Optional, delimitedList, 
-                       Literal, Keyword, Combine, pythonStyleComment)
+from pyparsing import (
+    Word,
+    srange,
+    Group,
+    Suppress,
+    Optional,
+    delimitedList,
+    Literal,
+    Keyword,
+    Combine,
+    pythonStyleComment,
+)
 
 # ==========================================
 # 1. ESTRUCTURAS DE DATOS (Dataclasses)
 # ==========================================
+
 
 @dataclass
 class Tripleta:
@@ -13,17 +24,20 @@ class Tripleta:
     predicado: str
     objeto: str
 
+
 @dataclass
 class Restriccion:
     variable: str
     operador: str
     valor: int
 
+
 @dataclass
 class Hecho:
     tripleta: Tripleta
-    certeza: float = 1.0  
-    negado: bool = False  
+    certeza: float = 1.0
+    negado: bool = False
+
 
 @dataclass
 class Regla:
@@ -33,10 +47,12 @@ class Regla:
     # Nueva lista para guardar las desigualdades (Tarea 7)
     restricciones: List[Restriccion] = field(default_factory=list)
 
+
 @dataclass
 class Consulta:
     tripleta: Tripleta
-    razona_si: bool = False # Si es True, usará encadenamiento hacia atrás
+    razona_si: bool = False  # Si es True, usará encadenamiento hacia atrás
+
 
 # ==========================================
 # 2. GRAMÁTICA PYPARSING (Traducción EBNF)
@@ -65,15 +81,22 @@ restriccion.set_parse_action(lambda t: Restriccion(t[0], t[1], t[2]))
 
 # Agrupamos las extensiones entre corchetes separados por punto y coma
 extension_item = extension_difusa | restriccion
-extension_grupo = Group(Suppress("[") + delimitedList(extension_item, delim=";") + Suppress("]"))
+extension_grupo = Group(
+    Suppress("[") + delimitedList(extension_item, delim=";") + Suppress("]")
+)
 
 # --- Parseo de Hechos (Afirmaciones y Negaciones) ---
 afirmacion = tripleta + Suppress(".") + Optional(extension_grupo, default=[])
+
+
 def procesar_afirmacion(t):
     certeza = 1.0
-    for ext in t[1]: # Busca si en los corchetes hay un número de lógica difusa
-        if isinstance(ext, float): certeza = ext
+    for ext in t[1]:  # Busca si en los corchetes hay un número de lógica difusa
+        if isinstance(ext, float):
+            certeza = ext
     return Hecho(tripleta=t[0], certeza=certeza)
+
+
 afirmacion.set_parse_action(procesar_afirmacion)
 
 negacion = Keyword("no") + tripleta + Suppress(".")
@@ -93,22 +116,30 @@ consulta_parser = consulta_razona | consulta_simple
 
 # --- Parseo de Reglas ---
 antecedentes_grupo = Group(delimitedList(tripleta))
-reglas_parser = tripleta + Suppress("<-") + antecedentes_grupo + Suppress(".") + Optional(extension_grupo, default=[])
+reglas_parser = (
+    tripleta
+    + Suppress("<-")
+    + antecedentes_grupo
+    + Suppress(".")
+    + Optional(extension_grupo, default=[])
+)
+
 
 def procesar_regla(t):
     consecuente = t[0]
     antecedentes = list(t[1])
     certeza = 1.0
     restricciones = []
-    
+
     # Clasificamos qué hay dentro de los corchetes finales
     for ext in t[2]:
         if isinstance(ext, float):
             certeza = ext
         elif isinstance(ext, Restriccion):
             restricciones.append(ext)
-            
+
     return Regla(consecuente, antecedentes, certeza, restricciones)
+
 
 reglas_parser.set_parse_action(procesar_regla)
 
