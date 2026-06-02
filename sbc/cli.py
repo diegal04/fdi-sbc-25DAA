@@ -75,9 +75,14 @@ def procesar_entrada(texto: str) -> bool:
         resultado = declaracion.parse_string(texto, parse_all=True)[0]
         
         if isinstance(resultado, Hecho):
-            memoria.agregar_hecho(resultado)
+            # Guardamos el resultado que nos devuelve la memoria
+            exito = memoria.agregar_hecho(resultado)
+            
             if resultado.negado:
-                console.print("[dim]Hecho revocado correctamente.[/dim]")
+                if exito:
+                    console.print("[dim]Hecho revocado correctamente.[/dim]")
+                else:
+                    console.print("[bold yellow]AVISO: El hecho especificado no existía en la memoria.[/bold yellow]")
             else:
                 console.print("[green]Hecho interiorizado en la memoria de trabajo.[/green]")
                 

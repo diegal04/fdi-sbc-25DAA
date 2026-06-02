@@ -56,33 +56,30 @@ class Memoria:
                 return # Si es idéntica, la ignoramos silenciosamente
         self.reglas.append(nueva_regla)
 
-    def agregar_hecho(self, nuevo_hecho: Hecho):
-        """Añade un hecho a la memoria, o lo revoca si es una negación."""
+    def agregar_hecho(self, nuevo_hecho: Hecho) -> bool:
+        """Añade un hecho a la memoria, o lo revoca si es una negación. Devuelve True si tuvo efecto."""
         
         # 1. ¿Es una orden de revocación? (Ej: "no coronel_mostaza esta_en biblioteca.")
         if nuevo_hecho.negado:
-            # Filtramos la lista para quedarnos con todos los hechos MENOS el que coincide.
-            # Gracias a que usamos Dataclasses en el parser, Python sabe comparar tripletas con '==' automáticamente.
             longitud_original = len(self.hechos)
             self.hechos = [h for h in self.hechos if h.tripleta != nuevo_hecho.tripleta]
             
             if len(self.hechos) < longitud_original:
                 logger.info(f"Hecho revocado: {nuevo_hecho.tripleta.sujeto} {nuevo_hecho.tripleta.predicado} {nuevo_hecho.tripleta.objeto}.")
-            return
+                return True
+            return False # <--- AÑADIDO: Si la lista mide lo mismo, no borró nada.
 
         # 2. Es una afirmación normal. Comprobamos si ya existía para actualizar su certeza.
         for h in self.hechos:
             if h.tripleta == nuevo_hecho.tripleta:
-                # Si el hecho ya existía, pero ahora nos lo dicen con una certeza distinta (Lógica difusa), lo actualizamos.
                 if h.certeza != nuevo_hecho.certeza:
                     h.certeza = nuevo_hecho.certeza
                     logger.debug(f"Hecho actualizado con nueva certeza [{h.certeza}]: {h.tripleta.sujeto}")
-                return # Salimos para no duplicarlo
+                return True # <--- AÑADIDO: Salimos devolviendo éxito
 
         # 3. Si es totalmente nuevo, lo añadimos al final de la lista.
         self.hechos.append(nuevo_hecho)
-        # logger.debug(f"Nuevo hecho memorizado: {nuevo_hecho.tripleta.sujeto}...")
-
+        return True # <--- AÑADIDO: Salimos devolviendo éxito
     def limpiar(self):
         """Borra toda la memoria (útil si el usuario quiere reiniciar el sistema)."""
         self.hechos.clear()
