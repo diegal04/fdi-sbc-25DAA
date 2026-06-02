@@ -1,0 +1,39 @@
+# ==============================================================
+# BATERÍA DE PRUEBAS: CASOS LÍMITE Y TEST DE ESTRÉS
+# ==============================================================
+
+# --- 1. SINTAXIS EXTREMA (Variables y Literales con números) ---
+# Probamos que el parser acepta números incrustados donde toca
+007_agente investiga caso_1.
+sospechoso_1 tiene_edad 45.
+
+certeza_minima es valida. [ 0.1 ]
+certeza_maxima es valida. [ 1 ]
+
+# --- 2. MATEMÁTICAS: OPERADORES EN EL LÍMITE EXACTO ---
+# Vamos a probar la frontera matemática exacta del número 25
+sujeto_a edad 20.
+sujeto_b edad 25.
+sujeto_c edad 30.
+
+X es grupo_1 <- X edad E. [ E < 25 ]
+X es grupo_2 <- X edad E. [ E <= 25 ]
+X es grupo_3 <- X edad E. [ E > 25 ]
+X es grupo_4 <- X edad E. [ E >= 25 ]
+X es grupo_5 <- X edad E. [ E = 25 ]
+
+# --- 3. RECURSIVIDAD PROFUNDA Y DEGRADACIÓN DIFUSA ---
+# Una cadena larga. El motor debe multiplicar 0.9 * 0.9 * 0.9 = 0.729
+eslabon_3 conecta_con fin. [ 0.9 ]
+eslabon_2 conecta_con eslabon_3. [ 0.9 ]
+eslabon_1 conecta_con eslabon_2. [ 0.9 ]
+
+# Reglas recursivas para recorrer la cadena
+X llega_a fin <- X conecta_con fin. [ 1 ]
+X llega_a fin <- X conecta_con Y, Y llega_a fin. [ 1 ]
+
+# --- 4. ATAQUE DE BUCLE INFINITO (Reglas Circulares) ---
+# Si el sistema no tiene un seguro de vida, esto congelará tu ordenador
+gallina crea huevo.
+X crea huevo <- X crea gallina. [ 1 ]
+X crea gallina <- X crea huevo. [ 1 ]
