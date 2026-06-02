@@ -90,7 +90,9 @@ class TestUnificacion(unittest.TestCase):
 
     def test_variable_libre_se_enlaza(self):
         sust = unificar(
-            Tripleta("X", "es", "asesino"), Tripleta("coronel_mostaza", "es", "asesino"), {}
+            Tripleta("X", "es", "asesino"),
+            Tripleta("coronel_mostaza", "es", "asesino"),
+            {},
         )
         self.assertIsNotNone(sust)
         self.assertEqual(sust["X"], "coronel_mostaza")
@@ -176,45 +178,65 @@ class TestEvaluarRestricciones(unittest.TestCase):
 
     # --- Operador < ---
     def test_menor_estricto_verdadero(self):
-        self.assertTrue(evaluar_restricciones([Restriccion("E", "<", 25)], self._sust("E", 20)))
+        self.assertTrue(
+            evaluar_restricciones([Restriccion("E", "<", 25)], self._sust("E", 20))
+        )
 
     def test_menor_estricto_en_limite_falso(self):
         """E < 25 es FALSO cuando E = 25 (frontera exacta)."""
-        self.assertFalse(evaluar_restricciones([Restriccion("E", "<", 25)], self._sust("E", 25)))
+        self.assertFalse(
+            evaluar_restricciones([Restriccion("E", "<", 25)], self._sust("E", 25))
+        )
 
     def test_menor_estricto_mayor_falso(self):
-        self.assertFalse(evaluar_restricciones([Restriccion("E", "<", 25)], self._sust("E", 30)))
+        self.assertFalse(
+            evaluar_restricciones([Restriccion("E", "<", 25)], self._sust("E", 30))
+        )
 
     # --- Operador <= ---
     def test_menor_igual_en_limite_verdadero(self):
         """E <= 25 es VERDADERO cuando E = 25 (frontera inclusiva)."""
-        self.assertTrue(evaluar_restricciones([Restriccion("E", "<=", 25)], self._sust("E", 25)))
+        self.assertTrue(
+            evaluar_restricciones([Restriccion("E", "<=", 25)], self._sust("E", 25))
+        )
 
     def test_menor_igual_mayor_falso(self):
-        self.assertFalse(evaluar_restricciones([Restriccion("E", "<=", 25)], self._sust("E", 26)))
+        self.assertFalse(
+            evaluar_restricciones([Restriccion("E", "<=", 25)], self._sust("E", 26))
+        )
 
     # --- Operador > ---
     def test_mayor_estricto_verdadero(self):
         self.assertTrue(
-            evaluar_restricciones([Restriccion("Hora", ">", 2200)], self._sust("Hora", 2330))
+            evaluar_restricciones(
+                [Restriccion("Hora", ">", 2200)], self._sust("Hora", 2330)
+            )
         )
 
     def test_mayor_estricto_en_limite_falso(self):
         """Hora > 2200 es FALSO cuando Hora = 2200."""
         self.assertFalse(
-            evaluar_restricciones([Restriccion("Hora", ">", 2200)], self._sust("Hora", 2200))
+            evaluar_restricciones(
+                [Restriccion("Hora", ">", 2200)], self._sust("Hora", 2200)
+            )
         )
 
     # --- Operador >= ---
     def test_mayor_igual_en_limite_verdadero(self):
-        self.assertTrue(evaluar_restricciones([Restriccion("E", ">=", 25)], self._sust("E", 25)))
+        self.assertTrue(
+            evaluar_restricciones([Restriccion("E", ">=", 25)], self._sust("E", 25))
+        )
 
     # --- Operador = ---
     def test_igual_verdadero(self):
-        self.assertTrue(evaluar_restricciones([Restriccion("E", "=", 25)], self._sust("E", 25)))
+        self.assertTrue(
+            evaluar_restricciones([Restriccion("E", "=", 25)], self._sust("E", 25))
+        )
 
     def test_igual_falso(self):
-        self.assertFalse(evaluar_restricciones([Restriccion("E", "=", 25)], self._sust("E", 26)))
+        self.assertFalse(
+            evaluar_restricciones([Restriccion("E", "=", 25)], self._sust("E", 26))
+        )
 
     # --- Casos especiales ---
     def test_variable_no_resuelta_falla(self):
@@ -277,7 +299,9 @@ class TestEncadenamientoAdelante(unittest.TestCase):
     def test_tarea4_sospechoso_sin_coartada(self):
         """Tarea 4: coronel_mostaza llega a las 23:30 (> 22:00) → no tiene coartada."""
         h = _buscar(self.memoria, "coronel_mostaza", "tiene_coartada", "no")
-        self.assertIsNotNone(h, "coronel_mostaza debe no tener coartada (llega a las 2330)")
+        self.assertIsNotNone(
+            h, "coronel_mostaza debe no tener coartada (llega a las 2330)"
+        )
 
     def test_tarea4_inocente_con_coartada(self):
         """Tarea 4: senora_blanco llega a las 21:00 (<= 22:00) → sí tiene coartada."""
@@ -488,7 +512,9 @@ X crea gallina <- X crea huevo.
     def test_backward_chaining_termina_con_reglas_circulares(self):
         memoria, motor = _cargar_kb(self.KB_BUCLE)
         try:
-            resultados = list(motor.encadenamiento_hacia_atras(Tripleta("gallina", "crea", "huevo")))
+            resultados = list(
+                motor.encadenamiento_hacia_atras(Tripleta("gallina", "crea", "huevo"))
+            )
             # El hecho base 'gallina crea huevo' debe encontrarse directamente
             self.assertGreater(len(resultados), 0)
         except RecursionError:
@@ -511,7 +537,9 @@ X llega_a fin <- X conecta_con Y, Y llega_a fin.
         memoria, motor = _cargar_kb(self.KB_CADENA)
         motor.encadenamiento_hacia_adelante()
         h = _buscar(memoria, "eslabon_1", "llega_a", "fin")
-        self.assertIsNotNone(h, "eslabon_1 debe alcanzar 'fin' por encadenamiento hacia adelante")
+        self.assertIsNotNone(
+            h, "eslabon_1 debe alcanzar 'fin' por encadenamiento hacia adelante"
+        )
 
     def test_cadena_tres_eslabones_backward(self):
         """El encadenamiento hacia atrás debe resolver la cadena de 3 saltos."""
@@ -688,6 +716,120 @@ class TestLogicaDifusa(unittest.TestCase):
         certeza_backward = max(c for _, c in resultados_back)
 
         self.assertAlmostEqual(certeza_forward, certeza_backward, places=5)
+
+
+class TestPrecedenciaReglas(unittest.TestCase):
+    """
+    Tests funcionales de la Precedencia de Reglas.
+
+    Verifica que el motor evalúa las reglas de mayor precedencia antes que las
+    de menor precedencia, tanto en forward chaining (orden de deducción) como
+    en backward chaining (orden de resultados devueltos).
+    """
+
+    def test_memoria_ordena_reglas_por_precedencia_descendente(self):
+        """
+        Tras cargar reglas con distintas precedencias, self.reglas debe estar
+        ordenada de mayor a menor precedencia.
+        """
+        kb = (
+            "base es p.\n"
+            "res_baja es q <- base es p.\n"  # precedencia = 0 (defecto)
+            "res_alta es q <- base es p. [ 090 ]\n"  # precedencia = 90
+            "res_media es q <- base es p. [ 050 ]\n"  # precedencia = 50
+        )
+        memoria, _ = _cargar_kb(kb)
+        precedencias = [r.precedencia for r in memoria.reglas]
+        self.assertEqual(precedencias, sorted(precedencias, reverse=True))
+
+    def test_regla_alta_precedencia_se_evalua_primero_backward(self):
+        """
+        Con dos reglas que prueban 'P es resultado', la de mayor precedencia
+        debe devolver su solución PRIMERO en backward chaining.
+
+        Las reglas deben tener variables en el consecuente para que la
+        unificación funcione contra la consulta 'X es resultado'.
+        """
+        kb = (
+            # Dos fuentes: tipo_a y tipo_b
+            "candidato_a es tipo_a.\n"
+            "candidato_b es tipo_b.\n"
+            # Regla de baja prioridad: resuelve vía tipo_b
+            "P es resultado <- P es tipo_b.\n"
+            # Regla de alta prioridad: resuelve vía tipo_a (debe ir primera)
+            "P es resultado <- P es tipo_a. [ 090 ]\n"
+        )
+        memoria, motor = _cargar_kb(kb)
+        resultados = list(
+            motor.encadenamiento_hacia_atras(Tripleta("X", "es", "resultado"))
+        )
+        self.assertGreater(len(resultados), 0)
+        # La regla de prec=90 debe dar su resultado antes que la de prec=0
+        # La regla [090] usa tipo_a → candidato_a debe ser el primer X
+        primer_x = resultados[0][0].get("X")
+        self.assertEqual(primer_x, "candidato_a")
+
+    def test_todas_las_reglas_se_evaluan_independientemente_de_precedencia(self):
+        """
+        La precedencia define el ORDEN de evaluación, no excluye reglas.
+        Todas las reglas aplicables deben producir resultados eventualmente.
+        """
+        kb = (
+            "base_a es hecho.\n"
+            "base_b es hecho.\n"
+            "opcion_a es valida <- base_a es hecho.\n"
+            "opcion_b es valida <- base_b es hecho. [ 099 ]\n"
+        )
+        memoria, motor = _cargar_kb(kb)
+        motor.encadenamiento_hacia_adelante()
+        # Ambas opciones deben deducirse
+        self.assertIsNotNone(_buscar(memoria, "opcion_a", "es", "valida"))
+        self.assertIsNotNone(_buscar(memoria, "opcion_b", "es", "valida"))
+
+    def test_precedencia_alta_deduce_primero_en_forward(self):
+        """
+        En forward chaining, la regla de mayor precedencia debe deducir su
+        conclusión antes que la de menor precedencia (orden en hechos derivados).
+        """
+        kb = (
+            "base_baja es p.\n"
+            "base_alta es p.\n"
+            "concl_baja es derivado <- base_baja es p.\n"
+            "concl_alta es derivado <- base_alta es p. [ 080 ]\n"
+        )
+        memoria, motor = _cargar_kb(kb)
+        motor.encadenamiento_hacia_adelante()
+        hechos_derivados = [
+            h.tripleta.sujeto
+            for h in memoria.hechos
+            if h.tripleta.predicado == "es" and h.tripleta.objeto == "derivado"
+        ]
+        # concl_alta debe aparecer antes que concl_baja
+        self.assertIn("concl_alta", hechos_derivados)
+        self.assertIn("concl_baja", hechos_derivados)
+        self.assertLess(
+            hechos_derivados.index("concl_alta"),
+            hechos_derivados.index("concl_baja"),
+        )
+
+    def test_reglas_sin_precedencia_tienen_valor_cero(self):
+        """Las reglas sin bloque de extensión tienen precedencia = 0."""
+        kb = "base es p.\nresultado es q <- base es p.\n"
+        memoria, _ = _cargar_kb(kb)
+        self.assertEqual(memoria.reglas[0].precedencia, 0)
+
+    def test_precedencia_no_afecta_certeza_ni_restricciones(self):
+        """
+        Añadir una precedencia a una regla no debe alterar su certeza ni
+        sus restricciones aritméticas.
+        """
+        kb = "base llega Hora.\nresultado es q <- base llega Hora. [ 0.7; 050; Hora > 10 ]\n"
+        memoria, _ = _cargar_kb(kb)
+        r = memoria.reglas[0]
+        self.assertEqual(r.precedencia, 50)
+        self.assertAlmostEqual(r.certeza, 0.7)
+        self.assertEqual(len(r.restricciones), 1)
+        self.assertEqual(r.restricciones[0].operador, ">")
 
 
 if __name__ == "__main__":

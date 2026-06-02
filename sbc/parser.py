@@ -46,6 +46,8 @@ class Regla:
     certeza: float = 1.0
     # Nueva lista para guardar las desigualdades (Tarea 7)
     restricciones: List[Restriccion] = field(default_factory=list)
+    # Precedencia de la regla: exactamente tres dígitos (000-999). Mayor = evaluar antes.
+    precedencia: int = 0
 
 
 @dataclass
@@ -79,8 +81,14 @@ entero = Word(srange("[0-9]")).set_parse_action(lambda t: int(t[0]))
 restriccion = variable + operador + entero
 restriccion.set_parse_action(lambda t: Restriccion(t[0], t[1], t[2]))
 
+# Precedencia: exactamente tres dígitos decimales (000-999). Mayor valor = mayor prioridad.
+# IMPORTANTE: debe ir ANTES de extension_difusa para que p.ej. "100" no sea consumido
+# como la certeza "1" seguida de "00" sin parsear.
+precedencia_token = Word(srange("[0-9]"), exact=3)
+precedencia_token.set_parse_action(lambda t: int(t[0]))
+
 # Agrupamos las extensiones entre corchetes separados por punto y coma
-extension_item = extension_difusa | restriccion
+extension_item = precedencia_token | extension_difusa | restriccion
 extension_grupo = Group(
     Suppress("[") + delimitedList(extension_item, delim=";") + Suppress("]")
 )
@@ -130,15 +138,18 @@ def procesar_regla(t):
     antecedentes = list(t[1])
     certeza = 1.0
     restricciones = []
+    precedencia = 0
 
     # Clasificamos qué hay dentro de los corchetes finales
     for ext in t[2]:
         if isinstance(ext, float):
             certeza = ext
+        elif isinstance(ext, int):  # Precedencia (exactamente 3 dígitos: 000-999)
+            precedencia = ext
         elif isinstance(ext, Restriccion):
             restricciones.append(ext)
 
-    return Regla(consecuente, antecedentes, certeza, restricciones)
+    return Regla(consecuente, antecedentes, certeza, restricciones, precedencia)
 
 
 reglas_parser.set_parse_action(procesar_regla)

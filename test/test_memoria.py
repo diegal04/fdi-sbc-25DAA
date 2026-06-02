@@ -85,7 +85,9 @@ class TestMemoriaCargarArchivo(unittest.TestCase):
 
     def test_carga_archivo_con_comentario_al_final(self):
         """Bug fix: un comentario al final del archivo no debe romper parse_all=True."""
-        contenido = "coronel_mostaza esta_en biblioteca.\n# comentario final sin salto\n"
+        contenido = (
+            "coronel_mostaza esta_en biblioteca.\n# comentario final sin salto\n"
+        )
         ruta = _crear_kb_temporal(contenido)
         try:
             resultado = self.memoria.cargar_archivo(ruta)

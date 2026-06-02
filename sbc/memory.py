@@ -58,7 +58,7 @@ class Memoria:
             return False
 
     def agregar_regla(self, nueva_regla: Regla):
-        """Añade una regla evitando duplicados exactos."""
+        """Añade una regla evitando duplicados exactos. Mantiene el orden por precedencia descendente."""
         for r in self.reglas:
             if (
                 r.consecuente == nueva_regla.consecuente
@@ -66,6 +66,9 @@ class Memoria:
             ):
                 return  # Si es idéntica, la ignoramos silenciosamente
         self.reglas.append(nueva_regla)
+        # El motor itera self.reglas en orden: las reglas de mayor precedencia
+        # se evalúan primero sin necesidad de ningún cambio en el motor.
+        self.reglas.sort(key=lambda r: r.precedencia, reverse=True)
 
     def agregar_hecho(self, nuevo_hecho: Hecho) -> bool:
         """Añade un hecho a la memoria, o lo revoca si es una negación. Devuelve True si tuvo efecto."""

@@ -1,0 +1,13 @@
+# ==========================================
+# TEST DE PRECEDENCIA DE REGLAS
+# ==========================================
+
+paciente tiene sintoma.
+
+# Escribimos las reglas desordenadas a propósito.
+# El motor, si no tuviera precedencia, las ejecutaría en orden de lectura (Leve -> Grave -> Moderado).
+# Pero gracias a nuestra extensión, el orden de ejecución DEBE ser: Grave (999) -> Moderado (500) -> Leve (010).
+
+X tiene_diagnostico leve <- X tiene sintoma. [ 010 ]
+X tiene_diagnostico grave <- X tiene sintoma. [ 999 ]
+X tiene_diagnostico moderado <- X tiene sintoma. [ 500 ]

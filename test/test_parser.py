@@ -57,7 +57,9 @@ class TestParserHechos(unittest.TestCase):
     def test_afirmacion_simple(self):
         h = self._parsear("coronel_mostaza esta_en biblioteca.")
         self.assertIsInstance(h, Hecho)
-        self.assertEqual(h.tripleta, Tripleta("coronel_mostaza", "esta_en", "biblioteca"))
+        self.assertEqual(
+            h.tripleta, Tripleta("coronel_mostaza", "esta_en", "biblioteca")
+        )
         self.assertAlmostEqual(h.certeza, 1.0)
         self.assertFalse(h.negado)
 
@@ -100,7 +102,9 @@ class TestParserHechos(unittest.TestCase):
     def test_error_sin_punto_final(self):
         """Una afirmación sin punto debe lanzar ParseException."""
         with self.assertRaises(ParseException):
-            hecho_parser.parse_string("coronel_mostaza esta_en biblioteca", parse_all=True)
+            hecho_parser.parse_string(
+                "coronel_mostaza esta_en biblioteca", parse_all=True
+            )
 
     def test_error_solo_dos_terminos(self):
         """Una tripleta incompleta (dos términos) debe fallar."""
@@ -135,9 +139,7 @@ class TestParserReglas(unittest.TestCase):
         self.assertEqual(r.antecedentes[1], Tripleta("P", "tiene_coartada", "no"))
 
     def test_regla_con_certeza_difusa(self):
-        r = self._parsear(
-            "X es arma_homicida <- victima sufre contusion. [ 0.9 ]"
-        )
+        r = self._parsear("X es arma_homicida <- victima sufre contusion. [ 0.9 ]")
         self.assertAlmostEqual(r.certeza, 0.9)
 
     def test_regla_con_restriccion_mayor_que(self):
@@ -151,7 +153,9 @@ class TestParserReglas(unittest.TestCase):
         self.assertEqual(res.valor, 2200)
 
     def test_regla_con_restriccion_menor_igual(self):
-        r = self._parsear("P tiene_coartada si <- P llega_a_casa Hora. [ Hora <= 2200 ]")
+        r = self._parsear(
+            "P tiene_coartada si <- P llega_a_casa Hora. [ Hora <= 2200 ]"
+        )
         self.assertEqual(r.restricciones[0].operador, "<=")
 
     def test_regla_con_restriccion_igual(self):
@@ -200,7 +204,9 @@ class TestParserConsultas(unittest.TestCase):
         )[0]
         self.assertIsInstance(c, Consulta)
         self.assertFalse(c.razona_si)
-        self.assertEqual(c.tripleta, Tripleta("coronel_mostaza", "esta_en", "biblioteca"))
+        self.assertEqual(
+            c.tripleta, Tripleta("coronel_mostaza", "esta_en", "biblioteca")
+        )
 
     def test_consulta_con_variable(self):
         """Una consulta puede contener variables: X esta_en ?"""
@@ -227,6 +233,74 @@ class TestParserConsultas(unittest.TestCase):
             consulta_parser.parse_string(
                 "coronel_mostaza esta_en biblioteca", parse_all=True
             )
+
+
+class TestParserPrecedencia(unittest.TestCase):
+    """Tests del parseo de la extensión de precedencia (digito digito digito)."""
+
+    def _parsear(self, texto: str) -> Regla:
+        return reglas_parser.parse_string(texto, parse_all=True)[0]
+
+    def test_regla_con_precedencia_entera(self):
+        """Una regla con [100] debe tener precedencia 100."""
+        r = self._parsear("X es sospechoso <- X es_tipo persona. [ 100 ]")
+        self.assertEqual(r.precedencia, 100)
+
+    def test_regla_con_precedencia_con_cero_inicial(self):
+        """Precedencia '050' debe parsearse como entero 50."""
+        r = self._parsear("X es sospechoso <- X es_tipo persona. [ 050 ]")
+        self.assertEqual(r.precedencia, 50)
+
+    def test_regla_con_precedencia_maxima(self):
+        """Precedencia '999' es el valor máximo permitido por la gramática."""
+        r = self._parsear("X es sospechoso <- X es_tipo persona. [ 999 ]")
+        self.assertEqual(r.precedencia, 999)
+
+    def test_regla_con_precedencia_minima(self):
+        """Precedencia '000' debe parsearse como entero 0."""
+        r = self._parsear("X es sospechoso <- X es_tipo persona. [ 000 ]")
+        self.assertEqual(r.precedencia, 0)
+
+    def test_regla_sin_precedencia_tiene_defecto_cero(self):
+        """Una regla sin extensión de precedencia debe tener precedencia = 0."""
+        r = self._parsear("X es sospechoso <- X es_tipo persona.")
+        self.assertEqual(r.precedencia, 0)
+
+    def test_precedencia_no_confunde_certeza_difusa(self):
+        """'[ 1 ]' (certeza) no debe interpretarse como precedencia (solo 1 dígito)."""
+        r = self._parsear("X es sospechoso <- X es_tipo persona. [ 1 ]")
+        self.assertAlmostEqual(r.certeza, 1.0)
+        self.assertEqual(r.precedencia, 0)  # No hay precedencia
+
+    def test_certeza_difusa_no_confunde_precedencia(self):
+        """'[ 0.9 ]' (certeza difusa) no debe interpretarse como precedencia."""
+        r = self._parsear("X es sospechoso <- X es_tipo persona. [ 0.9 ]")
+        self.assertAlmostEqual(r.certeza, 0.9)
+        self.assertEqual(r.precedencia, 0)
+
+    def test_extension_mixta_precedencia_y_certeza(self):
+        """Una regla puede tener certeza difusa Y precedencia separadas por ';'."""
+        r = self._parsear("P es asesino <- P es sospechoso. [ 0.8; 090 ]")
+        self.assertAlmostEqual(r.certeza, 0.8)
+        self.assertEqual(r.precedencia, 90)
+
+    def test_extension_mixta_precedencia_y_restriccion(self):
+        """Una regla puede tener precedencia Y restricción aritmética en el mismo bloque."""
+        r = self._parsear(
+            "P tiene_coartada no <- P llega_casa Hora. [ 100; Hora > 2200 ]"
+        )
+        self.assertEqual(r.precedencia, 100)
+        self.assertEqual(len(r.restricciones), 1)
+        self.assertEqual(r.restricciones[0].operador, ">")
+
+    def test_extension_triple_precedencia_certeza_restriccion(self):
+        """Una regla puede combinar las tres extensiones a la vez."""
+        r = self._parsear(
+            "P es culpable <- P llega_casa Hora. [ 0.9; 075; Hora > 2200 ]"
+        )
+        self.assertAlmostEqual(r.certeza, 0.9)
+        self.assertEqual(r.precedencia, 75)
+        self.assertEqual(len(r.restricciones), 1)
 
 
 if __name__ == "__main__":

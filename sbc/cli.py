@@ -93,6 +93,21 @@ def procesar_entrada(texto: str) -> bool:
             console.print(
                 f"  [cyan]{h.tripleta.sujeto}[/cyan] [white]{h.tripleta.predicado}[/white] [cyan]{h.tripleta.objeto}[/cyan]{certeza_txt}"
             )
+        if memoria.reglas:
+            console.print(
+                "[bold magenta]--- REGLAS (orden de ejecución) ---[/bold magenta]"
+            )
+            for r in memoria.reglas:
+                prec_txt = (
+                    rf" \[Prec: {r.precedencia:03d}]" if r.precedencia > 0 else ""
+                )
+                ants = ", ".join(
+                    f"{a.sujeto} {a.predicado} {a.objeto}" for a in r.antecedentes
+                )
+                console.print(
+                    f"  [yellow]{r.consecuente.sujeto} {r.consecuente.predicado} "
+                    f"{r.consecuente.objeto}[/yellow] <- [dim]{ants}[/dim]{prec_txt}"
+                )
         return True
 
     # 2. CONOCIMIENTO Y CONSULTAS (Hechos, Reglas, Preguntas)
