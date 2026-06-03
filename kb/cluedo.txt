@@ -1,0 +1,364 @@
+# ==============================================================================
+# BASE DE CONOCIMIENTO: LA MANSION BLACKWOOD
+# Sistema Basado en Conocimiento -- Proyecto Extraordinaria 2025
+# Ambientacion: Cluedo / Detective
+#
+# DISENO MODULAR:
+#   Las secciones 4 a 8 contienen los DATOS DEL CASO ACTUAL (hechos objetivos).
+#   Cambiar esos datos y ejecutar "descubrir!" produce automaticamente un nuevo
+#   culpable sin tocar ninguna regla.
+#
+# NOTA: si se cambia "crimen ocurrio_a", actualizar tambien los valores
+#       numericos de las restricciones aritmeticas en la Seccion 12.
+#
+# Hechos directos  (22 predicados): es_tipo, es, peso_gramos, tiene_profesion,
+#   tiene_caracter, conecta_con, fue_hallada_en, sufre, ocurrio_a,
+#   ubicacion_crimen, llega_mansion, sale_mansion, esta_en, tiene_sangre,
+#   tiene_huellas, huellas_en, hereda_a, fue_modificado, modificado_hace_dias,
+#   tuvo_conflicto_con, debe_dinero_a, ubica_en_escena
+#
+# Hechos derivados (18 predicados): es pesada, puede_causar, es_arma_vinculante,
+#   coincide_herida, es_arma_homicida, es_accesible_desde, pudo_acceder,
+#   estaba_en_escena, estuvo_en_mansion, tiene_coartada, no_tiene_coartada,
+#   descartado, confirmado_en_escena, tiene_movil, vinculado,
+#   es_sospechoso, es_sospechoso_fuerte, es_culpable, es_inocente
+# ==============================================================================
+
+
+# ==============================================================================
+# 1. ONTOLOGIA -- Categorias del dominio (invariante entre casos)
+# ==============================================================================
+
+coronel_mostaza   es_tipo persona.
+senora_escarlata  es_tipo persona.
+doctor_orquideo   es_tipo persona.
+senora_pavo_real  es_tipo persona.
+reverendo_verde   es_tipo persona.
+profesora_ciruelo es_tipo persona.
+
+candelabro    es_tipo arma.
+cuerda        es_tipo arma.
+llave_inglesa es_tipo arma.
+revolver      es_tipo arma.
+daga          es_tipo arma.
+tubo_plomo    es_tipo arma.
+
+biblioteca    es_tipo habitacion.
+salon         es_tipo habitacion.
+cocina        es_tipo habitacion.
+estudio       es_tipo habitacion.
+bodega        es_tipo habitacion.
+invernadero   es_tipo habitacion.
+pasillo       es_tipo habitacion.
+galeria       es_tipo habitacion.
+
+
+# ==============================================================================
+# 2. PROPIEDADES FIJAS DE LAS ARMAS (invariante entre casos)
+# ==============================================================================
+# El tipo de dano que inflige cada arma es una propiedad intrinseca del objeto.
+# El peso en gramos permite deducir automaticamente si el arma es pesada (S9).
+
+candelabro    es contundente.
+llave_inglesa es contundente.
+tubo_plomo    es contundente.
+daga          es cortante.
+cuerda        es estrangulante.
+revolver      es de_fuego.
+
+candelabro    peso_gramos 1800.
+llave_inglesa peso_gramos 900.
+tubo_plomo    peso_gramos 2200.
+daga          peso_gramos 300.
+cuerda        peso_gramos 250.
+revolver      peso_gramos 850.
+
+
+# ==============================================================================
+# 3. PERFIL DE SOSPECHOSOS Y PLANO DE LA MANSION (invariante entre casos)
+# ==============================================================================
+
+coronel_mostaza   tiene_profesion militar.
+senora_escarlata  tiene_profesion actriz.
+doctor_orquideo   tiene_profesion medico.
+senora_pavo_real  tiene_profesion aristocrata.
+reverendo_verde   tiene_profesion clerigo.
+profesora_ciruelo tiene_profesion cientifica.
+
+coronel_mostaza   tiene_caracter impulsivo.
+senora_escarlata  tiene_caracter calculador.
+doctor_orquideo   tiene_caracter calculador.
+senora_pavo_real  tiene_caracter codiciosa.
+reverendo_verde   tiene_caracter nervioso.
+profesora_ciruelo tiene_caracter calculador.
+
+# Adyacencia entre habitaciones (para razonar sobre acceso fisico a la escena)
+biblioteca    conecta_con pasillo.
+biblioteca    conecta_con estudio.
+salon         conecta_con pasillo.
+salon         conecta_con cocina.
+salon         conecta_con invernadero.
+estudio       conecta_con pasillo.
+bodega        conecta_con pasillo.
+galeria       conecta_con pasillo.
+invernadero   conecta_con jardin.
+
+
+# ==============================================================================
+# 4. DATOS DEL CRIMEN  <-- CAMBIAR AQUI PARA UN NUEVO CASO
+# ==============================================================================
+# Donde fue hallada la victima, que tipo de herida presenta y cuando ocurrio.
+
+victima fue_hallada_en biblioteca.
+victima sufre contusion.
+crimen ocurrio_a 2215.
+
+
+# ==============================================================================
+# 5. UBICACION EN EL MOMENTO DEL CRIMEN  <-- CAMBIAR AQUI PARA UN NUEVO CASO
+# ==============================================================================
+# Donde estaba cada sospechoso a la hora exacta del crimen.
+
+coronel_mostaza   ubicacion_crimen biblioteca.
+senora_escarlata  ubicacion_crimen salon.
+doctor_orquideo   ubicacion_crimen estudio.
+senora_pavo_real  ubicacion_crimen salon.
+reverendo_verde   ubicacion_crimen pasillo.
+profesora_ciruelo ubicacion_crimen biblioteca.
+
+
+# ==============================================================================
+# 6. CRONOLOGIA (COARTADAS)  <-- CAMBIAR AQUI PARA UN NUEVO CASO
+# ==============================================================================
+# Hora de llegada y salida de la mansion (formato HHMM, ej: 2215 = 22:15).
+# Si cambia "crimen ocurrio_a", actualizar los valores en la Seccion 12.
+
+coronel_mostaza   llega_mansion 2000.
+coronel_mostaza   sale_mansion  2300.
+
+senora_escarlata  llega_mansion 2100.
+senora_escarlata  sale_mansion  2400.
+
+doctor_orquideo   llega_mansion 1900.
+doctor_orquideo   sale_mansion  2130.
+
+senora_pavo_real  llega_mansion 2130.
+senora_pavo_real  sale_mansion  2359.
+
+reverendo_verde   llega_mansion 2000.
+reverendo_verde   sale_mansion  2200.
+
+profesora_ciruelo llega_mansion 1800.
+profesora_ciruelo sale_mansion  2300.
+
+
+# ==============================================================================
+# 7. EVIDENCIA FISICA  <-- CAMBIAR AQUI PARA UN NUEVO CASO
+# ==============================================================================
+# Localizacion de armas, evidencia biologica/dactilar sobre ellas.
+# La certeza refleja la fiabilidad del analisis forense (0.0 - 1.0).
+
+# Donde se encontro cada arma dentro de la mansion
+candelabro    esta_en biblioteca.
+cuerda        esta_en biblioteca.
+llave_inglesa esta_en estudio.
+daga          esta_en invernadero.
+tubo_plomo    esta_en bodega.
+revolver      esta_en salon.
+
+# Evidencia biologica y dactilar sobre las armas
+candelabro    tiene_sangre si.  [ 0.85 ]
+candelabro    tiene_huellas si. [ 0.90 ]
+cuerda        tiene_huellas si. [ 0.60 ]
+llave_inglesa tiene_sangre si.  [ 0.30 ]
+daga          tiene_sangre si.  [ 0.50 ]
+
+# Huellas dactilares identificadas sobre armas concretas
+coronel_mostaza   huellas_en candelabro.  [ 0.88 ]
+profesora_ciruelo huellas_en candelabro.  [ 0.55 ]
+reverendo_verde   huellas_en cuerda.      [ 0.65 ]
+
+
+# ==============================================================================
+# 8. MOVILES  <-- CAMBIAR AQUI PARA UN NUEVO CASO
+# ==============================================================================
+
+# Herencia directa del testamento de la victima (movil economico)
+testamento hereda_a doctor_orquideo.
+testamento hereda_a senora_pavo_real.
+testamento fue_modificado si.        [ 0.90 ]
+testamento modificado_hace_dias 3.
+
+# Deuda economica con la victima (la muerte la cancela)
+coronel_mostaza debe_dinero_a victima.
+
+# Conflictos personales previos con la victima (movil emocional)
+senora_escarlata  tuvo_conflicto_con victima.
+reverendo_verde   tuvo_conflicto_con victima.
+profesora_ciruelo tuvo_conflicto_con victima.
+
+# Testimonios y camaras que ubican a sospechosos en la escena del crimen
+mayordomo ubica_en_escena coronel_mostaza.    [ 0.80 ]
+mayordomo ubica_en_escena profesora_ciruelo.  [ 0.85 ]
+camara_1  ubica_en_escena coronel_mostaza.    [ 0.95 ]
+camara_1  ubica_en_escena profesora_ciruelo.  [ 0.92 ]
+
+
+# ==============================================================================
+# 9. REGLAS DE CLASIFICACION DE ARMAS
+# ==============================================================================
+# Derivamos las propiedades relevantes a partir de los datos objetivos del arma.
+# Asi no hay que declarar manualmente "candelabro es pesado" -- se infiere solo.
+
+# Arma pesada: supera los 800 gramos (umbral empirico para dano contundente grave)
+A es pesada <- A peso_gramos G. [ G > 800 ]
+
+# Arma contundente + pesada => puede causar contusion craneal
+A puede_causar contusion <- A es contundente, A es pesada. [ 0.90 ]
+
+# Tipo de dano segun la naturaleza intrinseca del arma
+A puede_causar herida_cortante  <- A es cortante.      [ 1 ]
+A puede_causar estrangulamiento <- A es estrangulante. [ 1 ]
+A puede_causar herida_de_bala   <- A es de_fuego.      [ 1 ]
+
+
+# ==============================================================================
+# 10. REGLAS DE IDENTIFICACION DEL ARMA HOMICIDA
+# ==============================================================================
+
+# Evidencia fisica fuerte o parcial
+A es_arma_vinculante crimen <- A tiene_sangre si, A tiene_huellas si. [ 0.95 ]
+A es_arma_vinculante crimen <- A tiene_sangre si.  [ 0.65 ]
+A es_arma_vinculante crimen <- A tiene_huellas si. [ 0.55 ]
+
+# El arma coincide con la herida (Desglosado para permitir Encadenamiento Hacia Atrás)
+A coincide_herida crimen <- A puede_causar contusion, victima sufre contusion. [ 1 ]
+A coincide_herida crimen <- A puede_causar herida_cortante, victima sufre herida_cortante. [ 1 ]
+A coincide_herida crimen <- A puede_causar estrangulamiento, victima sufre estrangulamiento. [ 1 ]
+A coincide_herida crimen <- A puede_causar herida_de_bala, victima sufre herida_de_bala. [ 1 ]
+
+# Arma homicida confirmada
+A es_arma_homicida crimen <- A coincide_herida crimen,
+                              A es_arma_vinculante crimen,
+                              A esta_en Lugar,
+                              victima fue_hallada_en Lugar. [ 900; 0.95 ]
+
+
+# ==============================================================================
+# 11. REGLAS DE ACCESIBILIDAD ESPACIAL
+# ==============================================================================
+# Deducimos quien pudo fisicamente llegar a la escena del crimen,
+# aunque no estuviera directamente en esa habitacion.
+
+# La conexion entre habitaciones es bidireccional
+H es_accesible_desde G <- H conecta_con G. [ 1 ]
+H es_accesible_desde G <- G conecta_con H. [ 1 ]
+
+# Un sospechoso pudo acceder a la escena si su habitacion conecta con ella
+P pudo_acceder crimen <- P ubicacion_crimen H,
+                          H es_accesible_desde Lugar,
+                          victima fue_hallada_en Lugar. [ 0.75 ]
+
+
+# ==============================================================================
+# 12. REGLAS DE PRESENCIA Y COARTADA
+# ==============================================================================
+# NOTA: el valor 2215 corresponde a "crimen ocurrio_a 2215".
+#       Si se cambia la hora del crimen, actualizar los cuatro numeros de abajo.
+
+# Estaba en la escena: su ubicacion a la hora del crimen coincide con la escena
+P estaba_en_escena crimen <- P ubicacion_crimen Lugar,
+                              victima fue_hallada_en Lugar. [ 1 ]
+
+# Estuvo en la mansion durante el crimen segun los registros horarios
+P estuvo_en_mansion crimen <- P llega_mansion LlegaH,
+                               P sale_mansion SaleH. [ LlegaH <= 2215; SaleH >= 2215 ]
+
+# Coartada horaria: demostrado que no estaba en la mansion a la hora del crimen
+P tiene_coartada crimen <- P sale_mansion SaleH.    [ SaleH < 2215 ]
+P tiene_coartada crimen <- P llega_mansion LlegaH.  [ LlegaH > 2215 ]
+
+# Sin coartada: estaba en la escena del crimen (prioridad maxima, se evalua primero)
+P no_tiene_coartada crimen <- P estaba_en_escena crimen. [ 999 ]
+
+# Descartado definitivamente: coartada horaria probada (prioridad maxima)
+P descartado crimen <- P tiene_coartada crimen. [ 999 ]
+
+# Confirmado en la escena por un testigo externo o por camara de seguridad
+P confirmado_en_escena crimen <- mayordomo ubica_en_escena P. [ 0.80 ]
+P confirmado_en_escena crimen <- camara_1  ubica_en_escena P. [ 0.95 ]
+
+
+# ==============================================================================
+# 13. REGLAS DE MOVIL
+# ==============================================================================
+# Tres fuentes independientes de movil. El motor deduce "tiene_movil" desde
+# cualquiera de ellas, con distintos grados de certeza segun la solidez del movil.
+
+# Movil economico: hereda del testamento y fue modificado recientemente
+P tiene_movil crimen <- testamento hereda_a P,
+                         testamento fue_modificado si. [ 0.85 ]
+
+# Movil economico urgente: testamento modificado hace muy pocos dias
+P tiene_movil crimen <- testamento hereda_a P,
+                         testamento modificado_hace_dias D. [ D <= 7 ]
+
+# Movil por deuda: la muerte de la victima cancela la deuda pendiente
+P tiene_movil crimen <- P debe_dinero_a victima. [ 0.80 ]
+
+# Movil emocional: conflicto personal previo con la victima
+P tiene_movil crimen <- P tuvo_conflicto_con victima. [ 0.75 ]
+
+
+# ==============================================================================
+# 14. REGLAS DE VINCULACION FISICA
+# ==============================================================================
+# Enlaza a un sospechoso con el arma homicida a traves de huellas dactilares.
+# Prioridad 900: es evidencia objetiva, pilar de la acusacion firme.
+
+P vinculado crimen <- P huellas_en A, A es_arma_homicida crimen. [ 900; 0.90 ]
+
+
+# ==============================================================================
+# 15. REGLAS DE SOSPECHA Y ACUSACION
+# ==============================================================================
+# Tres niveles de sospecha con distintas prioridades de evaluacion.
+# Los descartes [999] se evaluan primero para excluir a inocentes.
+# Luego culpables [800], sospechosos fuertes [500] y debiles [200].
+
+# NIVEL 1 -- Sospechoso debil: en la escena y con movil, o acceso posible y movil
+P es_sospechoso crimen <- P estaba_en_escena crimen,
+                           P tiene_movil crimen,
+                           P estuvo_en_mansion crimen. [ 200; 0.65 ]
+
+P es_sospechoso crimen <- P pudo_acceder crimen,
+                           P tiene_movil crimen,
+                           P estuvo_en_mansion crimen. [ 200; 0.55 ]
+
+# NIVEL 2 -- Sospechoso fuerte: vinculado fisicamente + sin coartada + movil
+P es_sospechoso_fuerte crimen <- P vinculado crimen,
+                                   P no_tiene_coartada crimen,
+                                   P tiene_movil crimen. [ 500; 0.90 ]
+
+# NIVEL 3 -- Culpable principal: sospechoso fuerte confirmado por testigo o camara
+P es_culpable crimen <- P es_sospechoso_fuerte crimen,
+                         P confirmado_en_escena crimen. [ 800; 0.95 ]
+
+# NIVEL 3 alternativo -- Culpable sin confirmacion testifical (solo evidencia)
+P es_culpable crimen <- P es_sospechoso_fuerte crimen,
+                         P tiene_movil crimen. [ 600; 0.85 ]
+
+# Inocente definitivo: coartada horaria probada (prioridad maxima)
+P es_inocente crimen <- P descartado crimen. [ 999 ]
+
+
+# ==============================================================================
+# FIN DE LA BASE DE CONOCIMIENTO -- LA MANSION BLACKWOOD
+#
+# Para probar un nuevo caso, modificar unicamente las secciones 4 a 8:
+#   - Seccion 4: lugar del hallazgo, tipo de herida, hora del crimen
+#   - Seccion 5: ubicacion de cada sospechoso en el momento del crimen
+#   - Seccion 6: horarios de entrada y salida de la mansion
+#   - Seccion 7: armas, su localizacion y evidencia forense sobre ellas
+#   - Seccion 8: herencias, deudas, conflictos y testimonios de testigos
+# ==============================================================================
