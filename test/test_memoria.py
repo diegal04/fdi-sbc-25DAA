@@ -15,7 +15,7 @@ from sbc.parser import Hecho, Regla, Tripleta
 
 # Ruta a los archivos de conocimiento del proyecto
 KB_DIR = Path(__file__).parent.parent / "kb"
-KB_MISTERIO = KB_DIR / "misterio.txt"
+KB_CLUEDO = KB_DIR / "cluedo.txt"
 
 
 def _crear_kb_temporal(contenido: str) -> Path:
@@ -35,25 +35,25 @@ class TestMemoriaCargarArchivo(unittest.TestCase):
         self.memoria = Memoria()
 
     def test_carga_archivo_existente_devuelve_true(self):
-        if not KB_MISTERIO.exists():
-            self.skipTest("kb/misterio.txt no disponible")
-        resultado = self.memoria.cargar_archivo(KB_MISTERIO)
+        if not KB_CLUEDO.exists():
+            self.skipTest("kb/cluedo.txt no disponible")
+        resultado = self.memoria.cargar_archivo(KB_CLUEDO)
         self.assertTrue(resultado)
 
     def test_carga_archivo_existente_popula_hechos_y_reglas(self):
-        if not KB_MISTERIO.exists():
-            self.skipTest("kb/misterio.txt no disponible")
-        self.memoria.cargar_archivo(KB_MISTERIO)
+        if not KB_CLUEDO.exists():
+            self.skipTest("kb/cluedo.txt no disponible")
+        self.memoria.cargar_archivo(KB_CLUEDO)
         self.assertGreater(len(self.memoria.hechos), 0)
         self.assertGreater(len(self.memoria.reglas), 0)
 
-    def test_carga_misterio_conteo_exacto(self):
-        """misterio.txt contiene exactamente 11 hechos y 5 reglas."""
-        if not KB_MISTERIO.exists():
-            self.skipTest("kb/misterio.txt no disponible")
-        self.memoria.cargar_archivo(KB_MISTERIO)
-        self.assertEqual(len(self.memoria.hechos), 11)
-        self.assertEqual(len(self.memoria.reglas), 5)
+    def test_carga_cluedo_conteo_exacto(self):
+        """cluedo.txt contiene exactamente 100 hechos y 46 reglas."""
+        if not KB_CLUEDO.exists():
+            self.skipTest("kb/cluedo.txt no disponible")
+        self.memoria.cargar_archivo(KB_CLUEDO)
+        self.assertEqual(len(self.memoria.hechos), 100)
+        self.assertEqual(len(self.memoria.reglas), 46)
 
     def test_carga_archivo_inexistente_devuelve_false(self):
         resultado = self.memoria.cargar_archivo("ruta/que/no/existe.txt")
@@ -238,9 +238,9 @@ class TestMemoriaLimpiar(unittest.TestCase):
 
     def test_limpiar_borra_hechos_y_reglas(self):
         memoria = Memoria()
-        if not KB_MISTERIO.exists():
-            self.skipTest("kb/misterio.txt no disponible")
-        memoria.cargar_archivo(KB_MISTERIO)
+        if not KB_CLUEDO.exists():
+            self.skipTest("kb/cluedo.txt no disponible")
+        memoria.cargar_archivo(KB_CLUEDO)
         memoria.limpiar()
         self.assertEqual(len(memoria.hechos), 0)
         self.assertEqual(len(memoria.reglas), 0)

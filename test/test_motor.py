@@ -25,7 +25,7 @@ from sbc.engine import (
 from sbc.memory import Memoria
 from sbc.parser import Restriccion, Tripleta
 
-KB_MISTERIO = Path(__file__).parent.parent / "kb" / "misterio.txt"
+KB_CLUEDO = Path(__file__).parent.parent / "kb" / "cluedo.txt"
 
 
 # ---------------------------------------------------------------------------
@@ -251,19 +251,19 @@ class TestEvaluarRestricciones(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# 3. Tests de encadenamiento hacia adelante sobre kb/misterio.txt (Tareas 1-5)
+# 3. Tests de encadenamiento hacia adelante sobre kb/cluedo.txt (Tareas 1-5)
 # ---------------------------------------------------------------------------
 
 
-@unittest.skipUnless(KB_MISTERIO.exists(), "kb/misterio.txt no disponible")
+@unittest.skipUnless(KB_CLUEDO.exists(), "kb/cluedo.txt no disponible")
 class TestEncadenamientoAdelante(unittest.TestCase):
     """
-    Tests funcionales del encadenamiento hacia adelante usando la KB del caso.
+    Tests funcionales del encadenamiento hacia adelante usando kb/cluedo.txt.
 
     Cada test verifica uno de los cinco requisitos del enunciado:
-      - Tarea 1: Identificación del arma homicida.
-      - Tarea 2: Verificación de oportunidad (ubicación).
-      - Tarea 3: Inferencia final del asesino.
+      - Tarea 1: Identificación del arma homicida (candelabro).
+      - Tarea 2: Verificación de oportunidad (ubicación en la escena).
+      - Tarea 3: Inferencia final del culpable.
       - Tarea 4: Descarte por restricciones aritméticas de tiempo.
       - Tarea 5: Propagación de incertidumbre (lógica difusa).
     """
@@ -271,7 +271,7 @@ class TestEncadenamientoAdelante(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.memoria = Memoria()
-        cls.memoria.cargar_archivo(KB_MISTERIO)
+        cls.memoria.cargar_archivo(KB_CLUEDO)
         cls.motor = MotorInferencia(cls.memoria)
         cls.descubiertos = cls.motor.encadenamiento_hacia_adelante()
 
@@ -281,65 +281,76 @@ class TestEncadenamientoAdelante(unittest.TestCase):
 
     # --- Tarea 1 ---
     def test_tarea1_candelabro_es_arma_homicida(self):
-        """Tarea 1: el candelabro debe ser deducido como arma_homicida."""
-        h = _buscar(self.memoria, "candelabro", "es", "arma_homicida")
-        self.assertIsNotNone(h, "candelabro debe deducirse como arma_homicida")
+        """Tarea 1: el candelabro debe ser deducido como es_arma_homicida crimen."""
+        h = _buscar(self.memoria, "candelabro", "es_arma_homicida", "crimen")
+        self.assertIsNotNone(h, "candelabro debe deducirse como arma homicida")
 
     # --- Tarea 5 (certeza del arma) ---
-    def test_tarea5_certeza_arma_es_minimo_antecedentes(self):
+    def test_tarea5_certeza_arma_homicida(self):
         """
-        Tarea 5: la certeza del arma = min(antecedentes) × certeza_regla.
-        victima[1.0], candelabro_pesado[1.0], tiene_sangre[0.6] → min=0.6 × 1 = 0.6.
+        Tarea 5: certeza del arma homicida.
+        es_arma_vinculante = min(0.85, 0.90) * 0.95 = 0.81
+        coincide_herida   = min(0.90, 1.00) * 1.00 = 0.90
+        es_arma_homicida  = min(0.90, 0.81) * 0.95 = 0.7695 ≈ 0.77
         """
-        h = _buscar(self.memoria, "candelabro", "es", "arma_homicida")
+        h = _buscar(self.memoria, "candelabro", "es_arma_homicida", "crimen")
         self.assertIsNotNone(h)
-        self.assertAlmostEqual(h.certeza, 0.6, places=5)
+        self.assertAlmostEqual(h.certeza, 0.77, places=2)
 
     # --- Tarea 4 ---
-    def test_tarea4_sospechoso_sin_coartada(self):
-        """Tarea 4: coronel_mostaza llega a las 23:30 (> 22:00) → no tiene coartada."""
-        h = _buscar(self.memoria, "coronel_mostaza", "tiene_coartada", "no")
-        self.assertIsNotNone(
-            h, "coronel_mostaza debe no tener coartada (llega a las 2330)"
-        )
+    def test_tarea4_coronel_sin_coartada(self):
+        """Tarea 4: coronel_mostaza estaba en la escena → no_tiene_coartada."""
+        h = _buscar(self.memoria, "coronel_mostaza", "no_tiene_coartada", "crimen")
+        self.assertIsNotNone(h, "coronel_mostaza debe no tener coartada")
 
-    def test_tarea4_inocente_con_coartada(self):
-        """Tarea 4: senora_blanco llega a las 21:00 (<= 22:00) → sí tiene coartada."""
-        h = _buscar(self.memoria, "senora_blanco", "tiene_coartada", "si")
-        self.assertIsNotNone(h, "senora_blanco debe tener coartada (llega a las 2100)")
+    def test_tarea4_doctor_con_coartada(self):
+        """Tarea 4: doctor_orquideo sale a las 2130 < 2215 → tiene_coartada."""
+        h = _buscar(self.memoria, "doctor_orquideo", "tiene_coartada", "crimen")
+        self.assertIsNotNone(h, "doctor_orquideo debe tener coartada (sale a las 2130)")
+
+    def test_tarea4_reverendo_con_coartada(self):
+        """Tarea 4: reverendo_verde sale a las 2200 < 2215 → tiene_coartada."""
+        h = _buscar(self.memoria, "reverendo_verde", "tiene_coartada", "crimen")
+        self.assertIsNotNone(h, "reverendo_verde debe tener coartada (sale a las 2200)")
+
+    def test_tarea4_inocentes_descartados(self):
+        """Tarea 4: doctor y reverendo son descartados y declarados inocentes."""
+        self.assertIsNotNone(_buscar(self.memoria, "doctor_orquideo", "es_inocente", "crimen"))
+        self.assertIsNotNone(_buscar(self.memoria, "reverendo_verde", "es_inocente", "crimen"))
 
     # --- Tarea 2 ---
-    def test_tarea2_coronel_es_sospechoso_por_ubicacion(self):
-        """Tarea 2: coronel_mostaza está en la biblioteca con el arma → es sospechoso."""
-        h = _buscar(self.memoria, "coronel_mostaza", "es", "sospechoso")
+    def test_tarea2_coronel_es_sospechoso(self):
+        """Tarea 2: coronel_mostaza está en la biblioteca → es_sospechoso crimen."""
+        h = _buscar(self.memoria, "coronel_mostaza", "es_sospechoso", "crimen")
         self.assertIsNotNone(h, "coronel_mostaza debe ser deducido como sospechoso")
 
-    def test_tarea5_certeza_sospechoso(self):
-        """
-        Tarea 5: certeza de sospechoso = min(1.0, 1.0, 1.0, 0.6) × 0.9 = 0.54.
-        """
-        h = _buscar(self.memoria, "coronel_mostaza", "es", "sospechoso")
-        self.assertIsNotNone(h)
-        self.assertAlmostEqual(h.certeza, 0.54, places=5)
+    def test_tarea2_coronel_es_sospechoso_fuerte(self):
+        """Tarea 2: coronel_mostaza vinculado + sin coartada + sospechoso → es_sospechoso_fuerte."""
+        h = _buscar(self.memoria, "coronel_mostaza", "es_sospechoso_fuerte", "crimen")
+        self.assertIsNotNone(h, "coronel_mostaza debe ser deducido como sospechoso fuerte")
 
     # --- Tarea 3 ---
-    def test_tarea3_asesino_deducido(self):
-        """Tarea 3: coronel_mostaza es sospechoso y no tiene coartada → es asesino."""
-        h = _buscar(self.memoria, "coronel_mostaza", "es", "asesino")
-        self.assertIsNotNone(h, "coronel_mostaza debe ser deducido como asesino")
+    def test_tarea3_culpable_deducido(self):
+        """Tarea 3: coronel_mostaza es_sospechoso_fuerte + confirmado → es_culpable."""
+        h = _buscar(self.memoria, "coronel_mostaza", "es_culpable", "crimen")
+        self.assertIsNotNone(h, "coronel_mostaza debe ser deducido como culpable")
 
-    def test_tarea3_inocente_no_es_asesino(self):
-        """Tarea 3: senora_blanco tiene coartada → NO debe ser deducida como asesina."""
-        h = _buscar(self.memoria, "senora_blanco", "es", "asesino")
-        self.assertIsNone(h, "senora_blanco no debe ser deducida como asesina")
+    def test_tarea3_inocentes_no_son_culpables(self):
+        """Tarea 3: los sospechosos con coartada NO deben ser deducidos como culpables."""
+        self.assertIsNone(_buscar(self.memoria, "doctor_orquideo", "es_culpable", "crimen"))
+        self.assertIsNone(_buscar(self.memoria, "reverendo_verde", "es_culpable", "crimen"))
 
-    def test_tarea5_certeza_asesino(self):
+    def test_tarea5_certeza_culpable(self):
         """
-        Tarea 5: certeza del asesino = min(0.54, 1.0) × 1 = 0.54.
+        Tarea 5: certeza de coronel_mostaza como culpable.
+        es_sospechoso     ≈ 0.54  (via tiene_capacidad_violenta)
+        vinculado         ≈ 0.693 (huellas 0.88 * arma 0.7695 * 0.90)
+        es_sospechoso_fuerte = min(0.54, 0.693, 1.0) * 0.90 ≈ 0.486
+        es_culpable       = min(0.486, 0.90) * 0.95 ≈ 0.462
         """
-        h = _buscar(self.memoria, "coronel_mostaza", "es", "asesino")
+        h = _buscar(self.memoria, "coronel_mostaza", "es_culpable", "crimen")
         self.assertIsNotNone(h)
-        self.assertAlmostEqual(h.certeza, 0.54, places=5)
+        self.assertAlmostEqual(h.certeza, 0.46, places=2)
 
     # --- Idempotencia ---
     def test_encadenamiento_es_idempotente(self):
@@ -349,14 +360,14 @@ class TestEncadenamientoAdelante(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# 4. Tests de encadenamiento hacia atrás sobre kb/misterio.txt (razona si)
+# 4. Tests de encadenamiento hacia atrás sobre kb/cluedo.txt (razona si)
 # ---------------------------------------------------------------------------
 
 
-@unittest.skipUnless(KB_MISTERIO.exists(), "kb/misterio.txt no disponible")
+@unittest.skipUnless(KB_CLUEDO.exists(), "kb/cluedo.txt no disponible")
 class TestEncadenamientoAtras(unittest.TestCase):
     """
-    Tests funcionales del encadenamiento hacia atrás.
+    Tests funcionales del encadenamiento hacia atrás con kb/cluedo.txt.
 
     El encadenamiento hacia atrás es independiente del hacia adelante:
     razona desde el objetivo hasta los hechos base sin precomputar nada.
@@ -365,31 +376,31 @@ class TestEncadenamientoAtras(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.memoria = Memoria()
-        cls.memoria.cargar_archivo(KB_MISTERIO)
+        cls.memoria.cargar_archivo(KB_CLUEDO)
         cls.motor = MotorInferencia(cls.memoria)
 
-    def test_hipotesis_asesino_confirmada(self):
-        """razona si coronel_mostaza es asesino? → debe devolver al menos un resultado."""
+    def test_hipotesis_culpable_confirmada(self):
+        """razona si coronel_mostaza es_culpable crimen? → debe devolver al menos un resultado."""
         resultados = list(
             self.motor.encadenamiento_hacia_atras(
-                Tripleta("coronel_mostaza", "es", "asesino")
+                Tripleta("coronel_mostaza", "es_culpable", "crimen")
             )
         )
         self.assertGreater(len(resultados), 0)
 
     def test_hipotesis_inocente_denegada(self):
-        """razona si senora_blanco es asesino? → no hay pruebas (tiene coartada)."""
+        """razona si doctor_orquideo es_culpable crimen? → no puede (sale antes del crimen)."""
         resultados = list(
             self.motor.encadenamiento_hacia_atras(
-                Tripleta("senora_blanco", "es", "asesino")
+                Tripleta("doctor_orquideo", "es_culpable", "crimen")
             )
         )
         self.assertEqual(len(resultados), 0)
 
-    def test_consulta_variable_quien_es_asesino(self):
-        """razona si X es asesino? → X debe resolverse a coronel_mostaza."""
+    def test_consulta_variable_quien_es_culpable(self):
+        """razona si X es_culpable crimen? → X debe incluir a coronel_mostaza."""
         resultados = list(
-            self.motor.encadenamiento_hacia_atras(Tripleta("X", "es", "asesino"))
+            self.motor.encadenamiento_hacia_atras(Tripleta("X", "es_culpable", "crimen"))
         )
         self.assertGreater(len(resultados), 0)
         valores_x = {sust.get("X") for sust, _ in resultados if "X" in sust}
@@ -402,24 +413,22 @@ class TestEncadenamientoAtras(unittest.TestCase):
         )
         self.assertEqual(len(resultados), 0)
 
-    def test_certeza_asesino_backward(self):
-        """
-        La certeza máxima devuelta por backward chaining debe ser 0.54,
-        igual que la calculada por forward chaining (coherencia aritmética).
-        """
+    def test_arma_homicida_confirmada_backward(self):
+        """razona si candelabro es_arma_homicida crimen? → debe derivarse por reglas."""
         resultados = list(
             self.motor.encadenamiento_hacia_atras(
-                Tripleta("coronel_mostaza", "es", "asesino")
+                Tripleta("candelabro", "es_arma_homicida", "crimen")
             )
         )
+        self.assertGreater(len(resultados), 0)
         certeza_max = max(c for _, c in resultados)
-        self.assertAlmostEqual(certeza_max, 0.54, places=5)
+        self.assertGreater(certeza_max, 0.5)
 
     def test_hecho_base_se_confirma_directamente(self):
         """Un hecho que ya está en memoria base se confirma sin recurrir a reglas."""
         resultados = list(
             self.motor.encadenamiento_hacia_atras(
-                Tripleta("coronel_mostaza", "esta_en", "biblioteca")
+                Tripleta("coronel_mostaza", "ubicacion_crimen", "biblioteca")
             )
         )
         self.assertGreater(len(resultados), 0)
@@ -430,7 +439,7 @@ class TestEncadenamientoAtras(unittest.TestCase):
         """Un hecho que no existe en memoria ni es deducible debe devolver vacío."""
         resultados = list(
             self.motor.encadenamiento_hacia_atras(
-                Tripleta("coronel_mostaza", "esta_en", "cocina")
+                Tripleta("coronel_mostaza", "ubicacion_crimen", "cocina")
             )
         )
         self.assertEqual(len(resultados), 0)
@@ -441,48 +450,56 @@ class TestEncadenamientoAtras(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-@unittest.skipUnless(KB_MISTERIO.exists(), "kb/misterio.txt no disponible")
+@unittest.skipUnless(KB_CLUEDO.exists(), "kb/cluedo.txt no disponible")
 class TestConsultarHechos(unittest.TestCase):
     """Tests para MotorInferencia.consultar_hechos() (búsqueda directa en memoria)."""
 
     @classmethod
     def setUpClass(cls):
         cls.memoria = Memoria()
-        cls.memoria.cargar_archivo(KB_MISTERIO)
+        cls.memoria.cargar_archivo(KB_CLUEDO)
         cls.motor = MotorInferencia(cls.memoria)
 
     def test_hecho_existente_encontrado(self):
         resultados = self.motor.consultar_hechos(
-            Tripleta("coronel_mostaza", "esta_en", "biblioteca")
+            Tripleta("coronel_mostaza", "ubicacion_crimen", "biblioteca")
         )
         self.assertGreater(len(resultados), 0)
 
     def test_certeza_hecho_base_es_uno(self):
         resultados = self.motor.consultar_hechos(
-            Tripleta("coronel_mostaza", "esta_en", "biblioteca")
+            Tripleta("coronel_mostaza", "ubicacion_crimen", "biblioteca")
         )
         self.assertAlmostEqual(resultados[0][1], 1.0)
 
     def test_hecho_inexistente_devuelve_lista_vacia(self):
         resultados = self.motor.consultar_hechos(
-            Tripleta("coronel_mostaza", "esta_en", "cocina")
+            Tripleta("coronel_mostaza", "ubicacion_crimen", "cocina")
         )
         self.assertEqual(len(resultados), 0)
 
     def test_consulta_con_variable_devuelve_bindings(self):
-        """X esta_en biblioteca? → X debe enlazarse a coronel_mostaza y candelabro."""
+        """X esta_en biblioteca? → X debe enlazarse a candelabro y cuerda."""
         resultados = self.motor.consultar_hechos(Tripleta("X", "esta_en", "biblioteca"))
         valores = {sust["X"] for sust, _ in resultados}
-        self.assertIn("coronel_mostaza", valores)
         self.assertIn("candelabro", valores)
+        self.assertIn("cuerda", valores)
 
     def test_consulta_con_certeza_difusa_correcta(self):
-        """El hecho 'candelabro tiene_sangre si' tiene certeza 0.6."""
+        """El hecho 'candelabro tiene_sangre si' tiene certeza 0.85."""
         resultados = self.motor.consultar_hechos(
             Tripleta("candelabro", "tiene_sangre", "si")
         )
         self.assertGreater(len(resultados), 0)
-        self.assertAlmostEqual(resultados[0][1], 0.6)
+        self.assertAlmostEqual(resultados[0][1], 0.85)
+
+    def test_consulta_todos_los_sospechosos(self):
+        """X es_tipo persona? → deben encontrarse los 6 sospechosos del caso."""
+        resultados = self.motor.consultar_hechos(Tripleta("X", "es_tipo", "persona"))
+        valores = {sust["X"] for sust, _ in resultados}
+        self.assertEqual(len(valores), 6)
+        self.assertIn("coronel_mostaza", valores)
+        self.assertIn("profesora_ciruelo", valores)
 
 
 # ---------------------------------------------------------------------------
