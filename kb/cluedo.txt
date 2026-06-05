@@ -97,7 +97,7 @@ crimen ocurrio_a 2215.
 # ==============================================================================
 # 5. UBICACION EN EL MOMENTO DEL CRIMEN
 # ==============================================================================
-# Donde estaba cada sospechoso a la hora exacta del crimen.
+# Donde estaba cada sospechoso a la hora exacta del crimen según interrogatorios iniciales.
 
 coronel_mostaza   ubicacion_crimen biblioteca.
 senora_escarlata  ubicacion_crimen salon.
