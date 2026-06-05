@@ -1,0 +1,329 @@
+# --------------------------------------------------------- 
+# JERARQUÍA DE RESIDUOS
+# --------------------------------------------------------- 
+
+minimizacion  prioridad maxima .
+reutilizacion prioridad alta .
+reciclaje     prioridad media .
+valorizacion  prioridad baja .
+eliminacion   prioridad minima .
+
+
+
+# --------------------------------------------------------- 
+# PLANES DE GESTIÓN
+# --------------------------------------------------------- 
+
+    # A) PLAN DE MINIMIZACIÓN
+    Residuo plan minimizacion <- Residuo minimizable true .
+    Residuo destino reduccion_origen <- Residuo plan minimizacion .
+
+        # A.1 MINIMIZACIÓN ENVASES Y LOGÍSTICA
+        empresa plan_minimizacion embalaje_carton <- Residuo destino reduccion_origen, cajas_embalaje_carton cantidad alta .
+        empresa plan_minimizacion embalaje_plastico <- Residuo destino reduccion_origen, cajas_embalaje_plastico cantidad alta .
+        Residuo retornable true <- empresa plan_minimizacion embalaje_plastico.
+
+        # A.2 MINIMIZACIÓN RESIDUOS PELIGROSOS
+        empresa plan_minimizacion optimizacion_procesos <- Residuo destino reduccion_origen, Residuo clasificado peligroso .
+
+        # A.3 MINIMIZACIÓN RAEE 
+        empresa plan_minimizacion mejora_equipos_durabilidad <- Residuo destino reduccion_origen, Residuo clasificado raee .
+        
+    # B) PLAN DE REUTILIZACIÓN
+    Residuo plan reutilizacion <- Residuo reutilizable true .
+    Residuo destino reutilizacion_interna <- Residuo plan reutilizacion .
+
+    # C) PLAN DE RECICLAJE
+    Residuo plan reciclaje <- Residuo reciclable true .
+
+        # C.1 Residuos en cantidades grandes
+
+        # Solo se manda a la planta de reciclaje si se produce el residuo en grandes cantidades
+        Residuo destino planta_reciclaje <- Residuo plan reciclaje, Residuo cantidad alta, empresa contrato planta_reciclaje . 
+
+        # C.1 Residuos en cantidades pequeñas o medianas
+        # Contenedores Urbanos / Recogida Selectiva
+
+        # Se deshace de los residuos en contenedores si es en cantidades razonables o si la empresa no tiene contrato con la planta_reciclaje.
+        Residuo destino Contenedor <- Residuo plan reciclaje, Residuo apto Contenedor, Residuo clasificado no_peligroso, Residuo cantidad baja .  
+        Residuo destino Contenedor <- Residuo plan reciclaje, Residuo apto Contenedor, Residuo clasificado no_peligroso, Residuo cantidad media .
+        Residuo destino Contenedor <- Residuo plan reciclaje, Residuo apto Contenedor, Residuo clasificado no_peligroso, Residuo cantidad alta, empresa no_contrato planta_reciclaje .
+
+    # D) PLAN DE VALORIZACIÓN (Energética y Termoquímica)
+    # REGLAS DE EXCLUSIÓN PARA VALORIZACIÓN
+
+        # D.1 Valorización Energética (Biogás)
+        
+        Residuo aplicable valorizacion <- Residuo composicion materia_organica, Residuo cantidad alta .
+
+        Residuo plan valorizacion <- Residuo aplicable valorizacion, Residuo minimizable false, Residuo reutilizable false, Residuo reciclable false, empresa prioridad minimizacion_impacto .
+
+        Residuo destino planta_digestion_anaerobica <- Residuo plan valorizacion, Residuo composicion materia_organica, Residuo propiedad biodegradable, empresa contrato planta_anaerobica .
+
+        # Beneficios para la empresa (Output de la planta)
+        empresa genera biogas <- Residuo destino planta_digestion_anaerobica .
+        empresa genera digestato <- Residuo destino planta_digestion_anaerobica .
+        empresa capacidad cogeneracion <- empresa genera biogas .
+        empresa reduce impacto_medioambiental <- empresa capacidad cogeneracion .
+
+        # D.2 Valorización Termoquímica (Pirólisis)
+
+        Residuo destino planta_de_pirolisis <- Residuo plan valorizacion, Residuo composicion materia_organica, Residuo propiedad no_biodegradable, empresa contrato planta_de_pirolisis .
+
+        empresa genera gases_combustibles_val <- Residuo destino planta_de_pirolisis .
+        empresa capacidad autoconsumo <- empresa genera gases_combustibles_val .
+        empresa reduce impacto_medioambiental <- empresa capacidad autoconsumo .
+
+        # D.3 Si el usuario indica que la empresa no tiene los contratos correspondientes
+
+        Residuo destino vertedero_controlado <- Residuo aplicable valorizacion, Residuo minimizable false, Residuo reutilizable false, Residuo reciclable false, empresa prioridad reduccion_costos .
+        Residuo destino vertedero_controlado <- Residuo plan valorizacion, empresa no_contrato planta_anaerobica, empresa no_contrato planta_de_pirolisis .
+
+    # E) PLANES ESPECIALES
+    Residuo plan tratamiento_especial <- Residuo clasificado peligroso, Residuo reciclable true .
+    Residuo destino punto_limpio_municipal <- Residuo plan tratamiento_especial, Residuo apto punto_limpio .
+
+    Residuo plan desmontaje_especial <- Residuo clasificado raee, Residuo reutilizable false .
+    Residuo destino planta_tratamiento_raee <- Residuo plan desmontaje_especial, empresa contrato planta_raee .
+    Residuo destino vertedero_controlado <- Residuo plan desmontaje_especial, empresa no_contrato planta_raee .
+
+    # Excepción por volumen
+    Residuo destino punto_limpio_municipal <- Residuo composicion madera, Residuo cantidad alta .
+
+    # F) PLAN DE ELIMINACIÓN (Vertedero, ultima opción)
+    Residuo plan eliminacion <- Residuo clasificado no_peligroso, Residuo reutilizable false, Residuo minimizable false, Residuo reciclable false .
+    Residuo destino vertedero_controlado <- Residuo plan eliminacion, Residuo cantidad alta .
+
+    Residuo destino contenedor_gris <- Residuo plan eliminacion, Residuo clasificado no_peligroso, Residuo cantidad baja .
+    Residuo destino contenedor_gris <- Residuo plan eliminacion, Residuo clasificado no_peligroso, Residuo cantidad media .
+
+
+
+
+# --------------------------------------------------------- 
+# GENERACIÓN DE RESIDUOS (Inventario de Empresa)
+# --------------------------------------------------------- 
+
+# Asignamos cantidades a los residuos con nombres reales
+cajas_embalaje_carton       cantidad alta . 
+botellas_vidrio             cantidad baja . 
+envases_plastico_pet        cantidad media .   
+restos_comida_comedor       cantidad alta .  
+disolventes_limpieza        cantidad baja .   
+virutas_metalicas           cantidad media . 
+uniformes_textiles_viejos   cantidad baja .   
+palets_madera_rotos         cantidad media .   
+pilas_alcalinas             cantidad baja .   
+ordenadores_obsoletos       cantidad baja . 
+escombros_obra_menor        cantidad alta .   
+aceite_motor_usado          cantidad media .  
+biomasa_lignocelulosica     cantidad alta .     #(Orgánico no bio para pirólisis)
+papel_taller                cantidad baja .  
+ventanas_rotas              cantidad media .  
+vajilla_ceramica_rota       cantidad baja .   
+bobinas_madera_industrial   cantidad alta .     
+toner_impresora             cantidad baja .     
+tubos_fluorescentes         cantidad baja . 
+cartuchos_tinta             cantidad baja .
+sprays_aerosol_vacios       cantidad baja .
+trapos_impregnados          cantidad baja .
+botes_pintura_restos        cantidad baja .
+baterias_litio              cantidad baja .
+moviles_rotos               cantidad baja .
+cables_electricos           cantidad media .
+latas_refresco              cantidad media .
+cajas_pizza_sucias          cantidad media .
+posos_cafe                  cantidad alta .
+restos_jardineria           cantidad alta .
+
+# --------------------------------------------------------- 
+# 1. COMPOSICIÓN DE LOS RESIDUOS (Mapeo Nombre -> Material) 
+# --------------------------------------------------------- 
+
+cajas_embalaje_carton       composicion papel_carton .
+cajas_embalaje_plastico     composicion plastico .
+botellas_vidrio             composicion vidrio .
+envases_plastico_pet        composicion plastico .
+restos_comida_comedor       composicion materia_organica .
+disolventes_limpieza        composicion sustancias_toxicas .
+virutas_metalicas           composicion metales .
+uniformes_textiles_viejos   composicion textiles .
+palets_madera_rotos         composicion madera .
+pilas_alcalinas             composicion baterias .
+ordenadores_obsoletos       composicion aparatos_electronicos .
+escombros_obra_menor        composicion materiales_obra .
+aceite_motor_usado          composicion aceites_usados .
+biomasa_lignocelulosica     composicion materia_organica .
+papel_taller                composicion papel_carton .
+ventanas_rotas              composicion cristal_plano .
+vajilla_ceramica_rota       composicion ceramica .
+bobinas_madera_industrial   composicion madera .
+toner_impresora             composicion sustancias_toxicas .
+tubos_fluorescentes         composicion luminarias .
+cartuchos_tinta             composicion sustancias_toxicas .
+sprays_aerosol_vacios       composicion sustancias_toxicas .
+trapos_impregnados          composicion sustancias_toxicas .
+botes_pintura_restos        composicion sustancias_toxicas .
+baterias_litio              composicion baterias .
+moviles_rotos               composicion aparatos_electronicos .
+cables_electricos           composicion metales .
+latas_refresco              composicion metales .
+cajas_pizza_sucias          composicion papel_carton .
+posos_cafe                  composicion materia_organica .
+restos_jardineria           composicion materia_organica .
+mascarillas_contaminadas    composicion residuo_sanitario .
+jeringuillas_usadas         composicion residuo_sanitario .
+plasticos_invernadero       composicion residuo_agricola .
+envases_fitosanitarios      composicion residuo_agricola_peligroso .
+lodos_de_proceso            composicion residuo_industrial .
+escorias_produccion         composicion residuo_industrial_inerte .
+
+# --------------------------------------------------------- 
+# 2. ESTADOS ESPECIALES
+# --------------------------------------------------------- 
+
+ordenadores_obsoletos       estado      funcional .
+moviles_rotos               estado      no_funcional .
+
+# --------------------------------------------------------- 
+# 3. PROPIEDADES BIOQUÍMICAS
+# --------------------------------------------------------- 
+
+restos_comida_comedor    propiedad biodegradable .
+biomasa_lignocelulosica  propiedad no_biodegradable . # (Para activar la rama de pirólisis definida en Hoja 1)
+posos_cafe               propiedad biodegradable .
+restos_jardineria        propiedad biodegradable .
+
+# --------------------------------------------------------- 
+# 4. CLASIFICACIÓN DE SEGURIDAD
+# --------------------------------------------------------- 
+
+    # A) NO PELIGROSO
+    Residuo clasificado no_peligroso <- Residuo composicion papel_carton .
+    Residuo clasificado no_peligroso <- Residuo composicion vidrio .
+    Residuo clasificado no_peligroso <- Residuo composicion plastico .
+    Residuo clasificado no_peligroso <- Residuo composicion materia_organica .
+    Residuo clasificado no_peligroso <- Residuo composicion textiles .
+    Residuo clasificado no_peligroso <- Residuo composicion madera .
+    Residuo clasificado no_peligroso <- Residuo composicion cristal_plano .
+    Residuo clasificado no_peligroso <- Residuo composicion ceramica .
+    Residuo clasificado no_peligroso <- Residuo composicion residuo_agricola .
+    Residuo clasificado no_peligroso <- Residuo composicion metales .
+
+    # B) PELIGROSO
+    Residuo clasificado peligroso <- Residuo composicion sustancias_toxicas .
+    Residuo clasificado peligroso <- Residuo composicion baterias .
+    Residuo clasificado peligroso <- Residuo composicion aceites_usados .
+    Residuo clasificado peligroso <- Residuo composicion luminarias . # Contiene mercurio
+    Residuo clasificado peligroso <- Residuo composicion residuo_sanitario .
+    Residuo clasificado peligroso <- Residuo composicion residuo_agricola_peligroso .
+    Residuo clasificado peligroso <- Residuo composicion residuo_industrial .
+
+    # C) RAEE (Residuos de Aparatos Eléctricos y Electrónicos)
+    Residuo clasificado raee <- Residuo composicion aparatos_electronicos .
+
+    # D) RCD (Residuos de Construcción y Demolición)
+    Residuo clasificado inerte <- Residuo composicion materiales_obra .
+
+    # E) OTROS
+
+# --------------------------------------------------------- 
+# 5. ATRIBUTOS DE GESTIÓN (Potencial del Material)
+# --------------------------------------------------------- 
+
+    # A) REUTILIZABLES (¿Se puede volver a usar tal cual?)
+    Residuo reutilizable true <- Residuo composicion papel_carton .
+    Residuo reutilizable true <- Residuo composicion vidrio .
+    Residuo reutilizable true <- Residuo composicion plastico .
+    Residuo reutilizable true <- Residuo composicion textiles .
+    Residuo reutilizable true <- Residuo composicion madera .
+    Residuo reutilizable true <- Residuo composicion aparatos_electronicos, Residuo estado funcional . # Si se reparan
+
+    Residuo reutilizable false <- Residuo composicion metales . 
+    Residuo reutilizable false <- Residuo clasificado peligroso .
+    Residuo reutilizable false <- Residuo composicion materia_organica .
+    Residuo reutilizable false <- Residuo clasificado inerte .
+    Residuo reutilizable false <- Residuo composicion residuo_sanitario .
+    Residuo reutilizable false <- Residuo composicion aparatos_electronicos, Residuo estado no_funcional .
+    
+    # B) RECICLABLES (¿Se puede transformar en materia prima?)
+    Residuo reciclable true <- Residuo composicion papel_carton .
+    Residuo reciclable true <- Residuo composicion vidrio .
+    Residuo reciclable true <- Residuo composicion plastico .
+    Residuo reciclable true <- Residuo composicion textiles .
+    Residuo reciclable true <- Residuo composicion aceites_usados .
+    Residuo reciclable true <- Residuo composicion madera .
+    Residuo reciclable true <- Residuo composicion metales .
+    Residuo reciclable true <- Residuo composicion baterias . 
+
+    Residuo reciclable false <- Residuo composicion sustancias_toxicas .
+    Residuo reciclable false <- Residuo composicion materia_organica .
+    Residuo reciclable false <- Residuo composicion residuo_sanitario .
+    Residuo reciclable false <- Residuo composicion residuo_agricola_peligroso .
+        
+    # C) MINIMIZABLES (¿Se puede reducir su generación en origen?)
+    Residuo minimizable true <- Residuo composicion papel_carton .
+    Residuo minimizable true <- Residuo composicion plastico .
+    Residuo minimizable true <- Residuo composicion textiles .
+    Residuo minimizable true <- Residuo composicion aceites_usados .
+    Residuo minimizable true <- Residuo composicion madera .
+    Residuo minimizable true <- Residuo composicion sustancias_toxicas .
+    Residuo minimizable true <- Residuo composicion residuo_industrial .
+    Residuo minimizable true <- Residuo clasificado raee . # (Como ampliación en su ciclo de vida)
+
+
+    Residuo minimizable false <- Residuo composicion baterias .
+    Residuo minimizable false <- Residuo composicion vidrio .
+    Residuo minimizable false <- Residuo composicion metales .
+    Residuo minimizable false <- Residuo composicion materia_organica .
+
+# --------------------------------------------------------- 
+# 6. RESTRICCIONES DE DEPÓSITO (Normas de Usuario)
+# --------------------------------------------------------- 
+
+# Qué SÍ se puede tirar
+Residuo apto contenedor_azul      <- Residuo composicion papel_carton .
+Residuo apto contenedor_verde     <- Residuo composicion vidrio .
+Residuo apto contenedor_amarillo  <- Residuo composicion plastico .
+Residuo apto contenedor_amarillo  <- Residuo composicion metales .
+Residuo apto contenedor_marron    <- Residuo composicion materia_organica, Residuo propiedad biodegradable .
+Residuo apto punto_limpio         <- Residuo clasificado peligroso .
+Residuo apto punto_limpio         <- Residuo clasificado raee .
+Residuo apto punto_limpio         <- Residuo composicion madera .
+Residuo apto punto_limpio         <- Residuo composicion aceites_usados .
+Residuo apto punto_limpio         <- Residuo composicion luminarias .
+
+# Qué NO se puede tirar (Validaciones negativas)
+Residuo prohibido contenedor_verde    <- Residuo composicion cristal_plano .
+Residuo prohibido contenedor_verde    <- Residuo composicion ceramica .
+Residuo prohibido contenedor_amarillo <- Residuo composicion baterias .
+Residuo prohibido contenedor_gris     <- Residuo composicion baterias .
+
+Residuo prohibido vertedero_municipal <- Residuo clasificado peligroso .
+
+
+# --------------------------------------------------------- 
+# INFORMACIÓN ESPECÍFICA DEL USUARIO 
+# --------------------------------------------------------- 
+
+# 1. OBJETIVOS PRIORITARIOS (el usuario elige)
+
+# usuario define_prioridad reduccion_costos .
+usuario define_prioridad minimizacion_impacto .
+
+empresa prioridad Prioridad <- usuario define_prioridad Prioridad .
+
+# 2. CONTRATOS CON LOS PLANTAS (el usuario indica si su empresa tiene contrato con cierta planta)
+
+usuario define_contrato planta_reciclaje .
+usuario define_contrato planta_raee .
+usuario define_contrato planta_anaerobica .
+usuario define_contrato planta_de_pirolisis .
+
+#usuario define_no_contrato planta_reciclaje .
+#usuario define_no_contrato planta_raee .
+#usuario define_no_contrato planta_anaerobica .
+#usuario define_no_contrato planta_de_pirolisis .
+
+empresa contrato Contrato <- usuario define_contrato Contrato .
+empresa no_contrato Contrato <- usuario define_no_contrato Contrato .

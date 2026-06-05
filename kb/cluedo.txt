@@ -2,31 +2,11 @@
 # BASE DE CONOCIMIENTO: LA MANSION BLACKWOOD
 # Sistema Basado en Conocimiento -- Proyecto Extraordinaria 2025
 # Ambientacion: Cluedo / Detective
-#
-# DISENO MODULAR:
-#   Las secciones 4 a 8 contienen los DATOS DEL CASO ACTUAL (hechos objetivos).
-#   Cambiar esos datos y ejecutar "descubrir!" produce automaticamente un nuevo
-#   culpable sin tocar ninguna regla.
-#
-# NOTA: si se cambia "crimen ocurrio_a", actualizar tambien los valores
-#       numericos de las restricciones aritmeticas en la Seccion 12.
-#
-# Hechos directos  (22 predicados): es_tipo, es, peso_gramos, tiene_profesion,
-#   tiene_caracter, conecta_con, fue_hallada_en, sufre, ocurrio_a,
-#   ubicacion_crimen, llega_mansion, sale_mansion, esta_en, tiene_sangre,
-#   tiene_huellas, huellas_en, hereda_a, fue_modificado, modificado_hace_dias,
-#   tuvo_conflicto_con, debe_dinero_a, ubica_en_escena
-#
-# Hechos derivados (18 predicados): es pesada, puede_causar, es_arma_vinculante,
-#   coincide_herida, es_arma_homicida, es_accesible_desde, pudo_acceder,
-#   estaba_en_escena, estuvo_en_mansion, tiene_coartada, no_tiene_coartada,
-#   descartado, confirmado_en_escena, tiene_movil, vinculado,
-#   es_sospechoso, es_sospechoso_fuerte, es_culpable, es_inocente
 # ==============================================================================
 
 
 # ==============================================================================
-# 1. ONTOLOGIA -- Categorias del dominio (invariante entre casos)
+# 1. ONTOLOGIA -- Categorias del dominio 
 # ==============================================================================
 
 coronel_mostaza   es_tipo persona.
@@ -54,7 +34,7 @@ galeria       es_tipo habitacion.
 
 
 # ==============================================================================
-# 2. PROPIEDADES FIJAS DE LAS ARMAS (invariante entre casos)
+# 2. PROPIEDADES FIJAS DE LAS ARMAS
 # ==============================================================================
 # El tipo de dano que inflige cada arma es una propiedad intrinseca del objeto.
 # El peso en gramos permite deducir automaticamente si el arma es pesada (S9).
@@ -75,7 +55,7 @@ revolver      peso_gramos 850.
 
 
 # ==============================================================================
-# 3. PERFIL DE SOSPECHOSOS Y PLANO DE LA MANSION (invariante entre casos)
+# 3. PERFIL DE SOSPECHOSOS Y PLANO DE LA MANSION 
 # ==============================================================================
 
 coronel_mostaza   tiene_profesion militar.
@@ -105,7 +85,7 @@ invernadero   conecta_con jardin.
 
 
 # ==============================================================================
-# 4. DATOS DEL CRIMEN  <-- CAMBIAR AQUI PARA UN NUEVO CASO
+# 4. DATOS DEL CRIMEN  
 # ==============================================================================
 # Donde fue hallada la victima, que tipo de herida presenta y cuando ocurrio.
 
@@ -115,7 +95,7 @@ crimen ocurrio_a 2215.
 
 
 # ==============================================================================
-# 5. UBICACION EN EL MOMENTO DEL CRIMEN  <-- CAMBIAR AQUI PARA UN NUEVO CASO
+# 5. UBICACION EN EL MOMENTO DEL CRIMEN
 # ==============================================================================
 # Donde estaba cada sospechoso a la hora exacta del crimen.
 
@@ -128,10 +108,9 @@ profesora_ciruelo ubicacion_crimen biblioteca.
 
 
 # ==============================================================================
-# 6. CRONOLOGIA (COARTADAS)  <-- CAMBIAR AQUI PARA UN NUEVO CASO
+# 6. CRONOLOGIA (COARTADAS)  
 # ==============================================================================
 # Hora de llegada y salida de la mansion (formato HHMM, ej: 2215 = 22:15).
-# Si cambia "crimen ocurrio_a", actualizar los valores en la Seccion 12.
 
 coronel_mostaza   llega_mansion 2000.
 coronel_mostaza   sale_mansion  2300.
@@ -153,7 +132,7 @@ profesora_ciruelo sale_mansion  2300.
 
 
 # ==============================================================================
-# 7. EVIDENCIA FISICA  <-- CAMBIAR AQUI PARA UN NUEVO CASO
+# 7. EVIDENCIA FISICA 
 # ==============================================================================
 # Localizacion de armas, evidencia biologica/dactilar sobre ellas.
 # La certeza refleja la fiabilidad del analisis forense (0.0 - 1.0).
@@ -180,7 +159,7 @@ reverendo_verde   huellas_en cuerda.      [ 0.65 ]
 
 
 # ==============================================================================
-# 8. MOVILES  <-- CAMBIAR AQUI PARA UN NUEVO CASO
+# 8. MOVILES  
 # ==============================================================================
 
 # Herencia directa del testamento de la victima (movil economico)
@@ -208,7 +187,6 @@ camara_1  ubica_en_escena profesora_ciruelo.  [ 0.92 ]
 # 9. REGLAS DE CLASIFICACION DE ARMAS
 # ==============================================================================
 # Derivamos las propiedades relevantes a partir de los datos objetivos del arma.
-# Asi no hay que declarar manualmente "candelabro es pesado" -- se infiere solo.
 
 # Arma pesada: supera los 800 gramos (umbral empirico para dano contundente grave)
 A es pesada <- A peso_gramos G. [ G > 800 ]
@@ -239,9 +217,7 @@ A coincide_herida crimen <- A puede_causar herida_de_bala, victima sufre herida_
 
 # Arma homicida confirmada
 A es_arma_homicida crimen <- A coincide_herida crimen,
-                              A es_arma_vinculante crimen,
-                              A esta_en Lugar,
-                              victima fue_hallada_en Lugar. [ 900; 0.95 ]
+                              A es_arma_vinculante crimen. [ 900; 0.95 ]
 
 
 # ==============================================================================
@@ -264,7 +240,6 @@ P pudo_acceder crimen <- P ubicacion_crimen H,
 # 12. REGLAS DE PRESENCIA Y COARTADA
 # ==============================================================================
 # NOTA: el valor 2215 corresponde a "crimen ocurrio_a 2215".
-#       Si se cambia la hora del crimen, actualizar los cuatro numeros de abajo.
 
 # Estaba en la escena: su ubicacion a la hora del crimen coincide con la escena
 P estaba_en_escena crimen <- P ubicacion_crimen Lugar,
@@ -354,11 +329,4 @@ P es_inocente crimen <- P descartado crimen. [ 999 ]
 
 # ==============================================================================
 # FIN DE LA BASE DE CONOCIMIENTO -- LA MANSION BLACKWOOD
-#
-# Para probar un nuevo caso, modificar unicamente las secciones 4 a 8:
-#   - Seccion 4: lugar del hallazgo, tipo de herida, hora del crimen
-#   - Seccion 5: ubicacion de cada sospechoso en el momento del crimen
-#   - Seccion 6: horarios de entrada y salida de la mansion
-#   - Seccion 7: armas, su localizacion y evidencia forense sobre ellas
-#   - Seccion 8: herencias, deudas, conflictos y testimonios de testigos
 # ==============================================================================
