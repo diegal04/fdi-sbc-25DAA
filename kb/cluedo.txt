@@ -184,6 +184,26 @@ camara_1  ubica_en_escena profesora_ciruelo.  [ 0.92 ]
 
 
 # ==============================================================================
+# 8b. REGLAS DE PERFIL PSICOLOGICO Y CAPACIDAD
+# ==============================================================================
+# Derivamos capacidad de violencia y perfil agresivo desde los datos personales.
+# actuo_con_premeditacion combina caracter calculador con movil ya confirmado
+# (depende de tiene_movil, derivado en S13; el motor resuelve por punto fijo).
+
+# Capacidad violenta segun profesion (entrenamiento o acceso a medios letales)
+P tiene_capacidad_violenta si <- P tiene_profesion militar.   [ 0.90 ]
+P tiene_capacidad_violenta si <- P tiene_profesion medico.    [ 0.60 ]
+
+# Perfil agresivo segun caracter declarado
+P tiene_perfil_agresivo si <- P tiene_caracter impulsivo.  [ 0.80 ]
+P tiene_perfil_agresivo si <- P tiene_caracter codiciosa.  [ 0.65 ]
+
+# Premeditacion: caracter calculador con movil probado indica acto planificado
+P actuo_con_premeditacion crimen <- P tiene_caracter calculador,
+                                     P tiene_movil crimen. [ 0.85 ]
+
+
+# ==============================================================================
 # 9. REGLAS DE CLASIFICACION DE ARMAS
 # ==============================================================================
 # Derivamos las propiedades relevantes a partir de los datos objetivos del arma.
@@ -207,7 +227,11 @@ A puede_causar herida_de_bala   <- A es de_fuego.      [ 1 ]
 # Evidencia fisica fuerte o parcial
 A es_arma_vinculante crimen <- A tiene_sangre si, A tiene_huellas si. [ 0.95 ]
 A es_arma_vinculante crimen <- A tiene_sangre si.  [ 0.65 ]
-A es_arma_vinculante crimen <- A tiene_huellas si. [ 0.55 ]
+A es_arma_vinculante crimen <- A tiene_huellas si. [ 0.45 ]
+
+# El arma hallada en la escena del crimen constituye evidencia de ubicacion
+A es_arma_vinculante crimen <- A esta_en Lugar,
+                                victima fue_hallada_en Lugar. [ 0.55 ]
 
 # El arma coincide con la herida (Desglosado para permitir Encadenamiento Hacia Atrás)
 A coincide_herida crimen <- A puede_causar contusion, victima sufre contusion. [ 1 ]
@@ -229,6 +253,10 @@ A es_arma_homicida crimen <- A coincide_herida crimen,
 # La conexion entre habitaciones es bidireccional
 H es_accesible_desde G <- H conecta_con G. [ 1 ]
 H es_accesible_desde G <- G conecta_con H. [ 1 ]
+
+# Accesibilidad transitiva (2 saltos): apoyada en hechos fijos, sin recursividad infinita
+H es_accesible_desde G <- H conecta_con I, 
+                          I conecta_con G. [ 0.85 ]
 
 # Un sospechoso pudo acceder a la escena si su habitacion conecta con ella
 P pudo_acceder crimen <- P ubicacion_crimen H,
@@ -255,6 +283,9 @@ P tiene_coartada crimen <- P llega_mansion LlegaH.  [ LlegaH > 2215 ]
 
 # Sin coartada: estaba en la escena del crimen (prioridad maxima, se evalua primero)
 P no_tiene_coartada crimen <- P estaba_en_escena crimen. [ 999 ]
+
+# Sin coartada debil: estaba en la mansion en el momento del crimen (fuera de la escena)
+P no_tiene_coartada crimen <- P estuvo_en_mansion crimen. [ 0.60 ]
 
 # Descartado definitivamente: coartada horaria probada (prioridad maxima)
 P descartado crimen <- P tiene_coartada crimen. [ 999 ]
@@ -310,18 +341,32 @@ P es_sospechoso crimen <- P pudo_acceder crimen,
                            P tiene_movil crimen,
                            P estuvo_en_mansion crimen. [ 200; 0.55 ]
 
-# NIVEL 2 -- Sospechoso fuerte: vinculado fisicamente + sin coartada + movil
-P es_sospechoso_fuerte crimen <- P vinculado crimen,
-                                   P no_tiene_coartada crimen,
-                                   P tiene_movil crimen. [ 500; 0.90 ]
+# NIVEL 1 variantes: perfil psicologico o fisico como via alternativa de sospecha
+P es_sospechoso crimen <- P estaba_en_escena crimen,
+                           P tiene_capacidad_violenta si,
+                           P estuvo_en_mansion crimen. [ 200; 0.60 ]
+
+P es_sospechoso crimen <- P pudo_acceder crimen,
+                           P tiene_perfil_agresivo si,
+                           P estuvo_en_mansion crimen. [ 200; 0.50 ]
+
+P es_sospechoso crimen <- P pudo_acceder crimen,
+                           P actuo_con_premeditacion crimen,
+                           P estuvo_en_mansion crimen. [ 200; 0.60 ]
+
+# NIVEL 2 -- Sospechoso fuerte: requiere ser sospechoso previo + vinculado + sin coartada + movil
+P es_sospechoso_fuerte crimen <- P es_sospechoso crimen,
+                                   P vinculado crimen,
+                                   P no_tiene_coartada crimen. [ 500; 0.90 ]
+                                    
 
 # NIVEL 3 -- Culpable principal: sospechoso fuerte confirmado por testigo o camara
 P es_culpable crimen <- P es_sospechoso_fuerte crimen,
                          P confirmado_en_escena crimen. [ 800; 0.95 ]
 
-# NIVEL 3 alternativo -- Culpable sin confirmacion testifical (solo evidencia)
+# NIVEL 3 alternativo -- Culpable sin confirmacion testifical: evidencia + premeditacion
 P es_culpable crimen <- P es_sospechoso_fuerte crimen,
-                         P tiene_movil crimen. [ 600; 0.85 ]
+                         P tiene_movil crimen. [ 600; 0.75 ]
 
 # Inocente definitivo: coartada horaria probada (prioridad maxima)
 P es_inocente crimen <- P descartado crimen. [ 999 ]
