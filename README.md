@@ -1,82 +1,57 @@
-# Sistema Experto - Proyecto SBC Extraordinaria 2025/26
+# Sistema Experto — Proyecto SBC Extraordinaria 2025/26
 
-Implementación en Python de un Sistema Experto basado en reglas de producción. El sistema incluye un motor de inferencia con soporte para encadenamiento hacia adelante, encadenamiento hacia atrás, evaluación de restricciones aritméticas y propagación de incertidumbre mediante lógica difusa.
+Motor de inferencia basado en reglas de producción implementado en Python. Soporta encadenamiento hacia adelante y hacia atrás, restricciones aritméticas y lógica difusa. Incluye una base de conocimiento completa para resolver el caso detectivesco de la **Mansión Blackwood** (temática *Cluedo*).
 
-## Documentación del Proyecto
+## Documentación
 
-Las justificaciones teóricas, la arquitectura del software y las decisiones de diseño técnico (manejo de colisiones de espacios de nombres, prevención de bucles recursivos y algoritmos de unificación) se encuentran detalladas en el directorio `doc/`.
+| Documento | Contenido |
+|---|---|
+| [doc/arquitectura.md](doc/arquitectura.md) | Módulos, algoritmos, gramática EBNF, decisiones de diseño |
+| [doc/dominio-cluedo.md](doc/dominio-cluedo.md) | El caso, la KB, la cadena de inferencia y las certezas |
+| [doc/manual-usuario.md](doc/manual-usuario.md) | Instalación, referencia de comandos y tutorial paso a paso |
+| [doc/tareas-y-pruebas.md](doc/tareas-y-pruebas.md) | Tareas resueltas y descripción de la suite de tests |
 
-## Descripción del Sistema
+## Estructura del repositorio
 
-El proyecto está modularizado en cuatro componentes principales:
-
-* **Parser Analizador (`sbc.parser`):** Implementado con `pyparsing`, interpreta una gramática EBNF estricta para leer la base de conocimiento, soportando variables, literales, extensiones difusas y restricciones temporales/matemáticas.
-* **Memoria de Trabajo (`sbc.memory`):** Estructura encargada de almacenar y gestionar la base de conocimiento empírico (hechos) y deductivo (reglas), permitiendo la aserción y revocación dinámica de afirmaciones en tiempo de ejecución.
-* **Motor de Inferencia (`sbc.engine`):** Núcleo lógico que implementa los algoritmos de resolución. Soporta deducción iterativa (hacia adelante), demostración de hipótesis mediante recursividad (hacia atrás), unificación profunda de variables y evaluación de álgebra booleana y difusa (norma T del mínimo y producto escalado).
-* **Interfaz de Usuario (`sbc.cli`):** Consola interactiva (REPL) para la ejecución de comandos, consultas, e interrogación del motor, con visualización detallada de las cadenas deductivas y las certezas matemáticas.
-
-## Estructura del Repositorio
-
-```text
-.
-├── doc/                # Documentación técnica y decisiones de diseño
-├── kb/                 # Bases de conocimiento (archivos .txt con ontología y reglas)
-├── sbc/                # Código fuente principal del módulo
-│   ├── __init__.py
-│   ├── cli.py          # Bucle de la consola interactiva
-│   ├── engine.py       # Algoritmos de inferencia y resolución
-│   ├── memory.py       # Gestión del estado y base de datos interna
-│   └── parser.py       # Definición de la gramática y tokens EBNF
-├── .gitignore          # Reglas de exclusión para Git
-└── README.md           # Presentación del repositorio
+```
+fdi-sbc-25DAA/
+├── doc/           ← documentación técnica
+├── kb/            ← bases de conocimiento (.txt)
+│   └── cluedo.txt ← caso principal (100 hechos, 46 reglas)
+├── sbc/           ← código fuente
+│   ├── parser.py  ← gramática EBNF con pyparsing
+│   ├── memory.py  ← gestión de hechos y reglas
+│   ├── engine.py  ← motor de inferencia (forward + backward)
+│   └── cli.py     ← consola REPL interactiva
+└── test/          ← 150 tests unitarios y funcionales
 ```
 
-## Requisitos y Ejecución
-
-El sistema está desarrollado para entornos **Python 3.10+**. Se recomienda gestionar el entorno y la ejecución a través de herramientas estándar como `uv` o entornos virtuales clásicos.
-
-Para ejecutar el sistema en modo interactivo desde la raíz del repositorio:
+## Instalación y ejecución
 
 ```bash
-uv run -m sbc.cli
+uv sync                  # instala dependencias
+uv run -m sbc.cli        # arranca la consola interactiva
+uv run python -m unittest discover test   # ejecuta los tests
 ```
 
-## Comandos de la CLI
+## Uso rápido
 
-| Comando | Descripción |
-| :--- | :--- |
-| `cargar! <ruta>` | Carga en memoria una base de conocimiento desde un archivo (ej. `cargar! kb/caso.txt`). |
-| `descubrir!` | Ejecuta el Motor de Inferencia en modo **Encadenamiento Hacia Adelante** para deducir todos los hechos posibles hasta la estabilización del sistema. |
-| `razona si <consulta>?`| Ejecuta el **Encadenamiento Hacia Atrás** para demostrar una hipótesis. Soporta resolución de variables completas o parciales (ej. `razona si X es asesino?`). |
-| `<consulta>?` | Realiza una búsqueda unificada directa en la Memoria de Trabajo sin disparar reglas deductivas. |
-| `<hecho>.` | Aserción: Introduce un nuevo hecho manualmente en la memoria. |
-| `no <hecho>.` | Revocación: Elimina un hecho existente de la memoria de trabajo. |
-| `memoria!` | Muestra el estado actual de la memoria (hechos cargados/deducidos con sus certezas y reglas activas). |
-| `ayuda!` | Imprime el manual de uso de la consola. |
-| `salir!` | Termina el proceso de forma segura. |
-
-## Ejemplos de Uso
-
-**1. Carga de información y deducción masiva (Hacia adelante)**
-```text
-SBC> cargar! kb/test_limites.txt
+```
+SBC> cargar!
 SBC> descubrir!
-SBC> memoria!
+SBC> X es_culpable crimen?
+  X = coronel_mostaza  [Certeza: 0.46]
+SBC> razona si X es_arma_homicida crimen?
+  X = candelabro       [Certeza: 0.77]
 ```
 
-**2. Consulta directa a memoria (con variables)**
-```text
-SBC> X tiene_coartada no?
-```
+## Comandos principales
 
-**3. Demostración de hipótesis (Hacia atrás)**
-```text
-SBC> razona si coronel_mostaza es asesino?
-SBC> razona si X es asesino?
-```
-
-**4. Modificación de la memoria en caliente**
-```text
-SBC> candelabro esta_en biblioteca.
-SBC> no coronel_mostaza esta_en salon.
-```
+| Comando | Acción |
+|---|---|
+| `cargar! <ruta>` | Carga una base de conocimiento |
+| `descubrir!` | Encadenamiento hacia adelante (satura la memoria) |
+| `razona si <tripleta>?` | Encadenamiento hacia atrás (demuestra hipótesis) |
+| `<tripleta>?` | Consulta directa en memoria |
+| `<tripleta>.` / `no <tripleta>.` | Aserción / retractación de hechos |
+| `memoria!` | Muestra el estado actual de la memoria |

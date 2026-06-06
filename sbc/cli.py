@@ -50,7 +50,7 @@ def procesar_entrada(texto: str) -> bool:
         console.print("   [cyan]razona si coronel_mostaza es asesina?[/cyan]")
         console.print("[bold]5. Comandos del sistema:[/bold]")
         console.print(
-            r"   [yellow]cargar! \[archivo][/yellow] : Carga el archivo txt (por defecto kb/misterio.txt)."
+            r"   [yellow]cargar! \[archivo][/yellow] : Carga el archivo txt (por defecto kb/cluedo.txt)."
         )
         console.print(
             "   [yellow]descubrir![/yellow]       : Ejecuta encadenamiento hacia adelante."
@@ -64,7 +64,7 @@ def procesar_entrada(texto: str) -> bool:
     elif texto.startswith("cargar!"):
         # Permite "cargar! kb/archivo.txt" o usa el de por defecto
         # Usamos strip() para capturar rutas con espacios correctamente
-        ruta = texto[len("cargar!") :].strip() or "kb/misterio.txt"
+        ruta = texto[len("cargar!") :].strip() or "kb/cluedo.txt"
         memoria.cargar_archivo(ruta)
         return True
 

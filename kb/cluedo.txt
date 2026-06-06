@@ -341,7 +341,6 @@ P es_sospechoso crimen <- P pudo_acceder crimen,
                            P tiene_movil crimen,
                            P estuvo_en_mansion crimen. [ 200; 0.55 ]
 
-# NIVEL 1 variantes: perfil psicologico o fisico como via alternativa de sospecha
 P es_sospechoso crimen <- P estaba_en_escena crimen,
                            P tiene_capacidad_violenta si,
                            P estuvo_en_mansion crimen. [ 200; 0.60 ]
@@ -354,7 +353,7 @@ P es_sospechoso crimen <- P pudo_acceder crimen,
                            P actuo_con_premeditacion crimen,
                            P estuvo_en_mansion crimen. [ 200; 0.60 ]
 
-# NIVEL 2 -- Sospechoso fuerte: requiere ser sospechoso previo + vinculado + sin coartada + movil
+# NIVEL 2 -- Sospechoso fuerte: requiere ser sospechoso previo + vinculado + sin coartada
 P es_sospechoso_fuerte crimen <- P es_sospechoso crimen,
                                    P vinculado crimen,
                                    P no_tiene_coartada crimen. [ 500; 0.90 ]
