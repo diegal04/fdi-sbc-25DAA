@@ -97,7 +97,8 @@ P estuvo_en_mansion crimen <- P llega_mansion LlegaH,
 **Implementación:** `sbc/engine.py` — cálculo de `certeza_final` en ambos modos de encadenamiento.
 
 **Modelo:**
-$$\text{certeza\_derivada} = \min(c_1, c_2, \ldots, c_n) \times c_{\text{regla}}$$
+
+$$\mathrm{certeza\_derivada} = \min(c_1, c_2, \ldots, c_n) \times \mathrm{certeza\_regla}$$
 
 **Propiedades garantizadas:**
 - La certeza nunca excede 1.0.
