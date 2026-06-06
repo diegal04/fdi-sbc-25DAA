@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Union
 from pyparsing import (
     Word,
     srange,
@@ -29,7 +29,7 @@ class Tripleta:
 class Restriccion:
     variable: str
     operador: str
-    valor: int
+    valor: Union[int, str]  # Puede ser un número o una variable
 
 
 @dataclass
@@ -73,17 +73,19 @@ tripleta = Group(termino + termino + termino)
 tripleta.set_parse_action(lambda t: Tripleta(t[0][0], t[0][1], t[0][2]))
 
 # --- Extensiones (Lógica Difusa y Restricciones) ---
-numero_difuso = Combine(Literal("0.") + Word(srange("[0-9]")) | Literal("1"))
+numero_difuso = Combine(Literal("0.") + Word(srange("[0-9]")) | Literal("1.0"))
 extension_difusa = numero_difuso.copy().set_parse_action(lambda t: float(t[0]))
 
 operador = Literal("<=") | Literal(">=") | Literal("<") | Literal(">") | Literal("=")
 entero = Word(srange("[0-9]")).set_parse_action(lambda t: int(t[0]))
-restriccion = variable + operador + entero
+valor_restriccion = variable | entero  # Puede ser una variable o un número
+restriccion = variable + operador + valor_restriccion
 restriccion.set_parse_action(lambda t: Restriccion(t[0], t[1], t[2]))
 
 # Precedencia: exactamente tres dígitos decimales (000-999). Mayor valor = mayor prioridad.
 # IMPORTANTE: debe ir ANTES de extension_difusa para que p.ej. "100" no sea consumido
-# como la certeza "1" seguida de "00" sin parsear.
+# como la certeza "1.0" seguida de "0" sin parsear (aunque ya no existe la ambigüedad
+# de "1" + "00", la precedencia sigue debiendo parsearse primero).
 precedencia_token = Word(srange("[0-9]"), exact=3)
 precedencia_token.set_parse_action(lambda t: int(t[0]))
 

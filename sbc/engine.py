@@ -48,18 +48,20 @@ def sustituir(tripleta: Tripleta, sust: Sustitucion) -> Tripleta:
 
 def evaluar_restricciones(restricciones: List[Restriccion], sust: Sustitucion) -> bool:
     for r in restricciones:
-        valor_resuelto = _resolver(r.variable, sust)
+        valor_var_resuelto = _resolver(r.variable, sust)
+        valor_derecho_resuelto = _resolver(str(r.valor), sust) if isinstance(r.valor, str) else r.valor
         try:
-            valor_var = int(valor_resuelto)
-            if r.operador == "<" and not (valor_var < r.valor):
+            valor_var = int(valor_var_resuelto)
+            valor_derecho = int(valor_derecho_resuelto)
+            if r.operador == "<" and not (valor_var < valor_derecho):
                 return False
-            if r.operador == "<=" and not (valor_var <= r.valor):
+            if r.operador == "<=" and not (valor_var <= valor_derecho):
                 return False
-            if r.operador == ">" and not (valor_var > r.valor):
+            if r.operador == ">" and not (valor_var > valor_derecho):
                 return False
-            if r.operador == ">=" and not (valor_var >= r.valor):
+            if r.operador == ">=" and not (valor_var >= valor_derecho):
                 return False
-            if r.operador == "=" and not (valor_var == r.valor):
+            if r.operador == "=" and not (valor_var == valor_derecho):
                 return False
         except ValueError:
             return False
@@ -114,7 +116,7 @@ class MotorInferencia:
                             if certeza_final > h.certeza:
                                 logger.debug(
                                     f"Certeza actualizada: {nueva_tripleta.sujeto} {nueva_tripleta.predicado} {nueva_tripleta.objeto} "
-                                    f"[{h.certeza:.2f} -> {certeza_final:.2f}]"
+                                    f"[{'1.0' if h.certeza == 1.0 else f'{h.certeza:.2f}'} -> {'1.0' if certeza_final == 1.0 else f'{certeza_final:.2f}'}]"
                                 )
                                 h.certeza = certeza_final
                                 modificado = True
@@ -124,7 +126,7 @@ class MotorInferencia:
                     if es_nuevo:
                         self.memoria.agregar_hecho(nuevo_hecho)
                         logger.info(
-                            f"Deducido: {nueva_tripleta.sujeto} {nueva_tripleta.predicado} {nueva_tripleta.objeto} [Certeza: {certeza_final:.2f}]"
+                            f"Deducido: {nueva_tripleta.sujeto} {nueva_tripleta.predicado} {nueva_tripleta.objeto} [Certeza: {'1.0' if certeza_final == 1.0 else f'{certeza_final:.2f}'}]"
                         )
                         hechos_descubiertos += 1
                         modificado = True

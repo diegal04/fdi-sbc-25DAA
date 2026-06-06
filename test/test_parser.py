@@ -69,8 +69,8 @@ class TestParserHechos(unittest.TestCase):
         self.assertAlmostEqual(h.certeza, 0.6)
 
     def test_afirmacion_con_certeza_maxima(self):
-        """La certeza 1 (entero) debe parsearse como 1.0."""
-        h = self._parsear("hecho es valido. [ 1 ]")
+        """La certeza 1.0 debe parsearse como 1.0."""
+        h = self._parsear("hecho es valido. [ 1.0 ]")
         self.assertAlmostEqual(h.certeza, 1.0)
 
     def test_afirmacion_con_certeza_minima(self):
@@ -173,6 +173,16 @@ class TestParserReglas(unittest.TestCase):
         self.assertEqual(len(r.restricciones), 1)
         self.assertEqual(r.restricciones[0].variable, "Hora")
 
+    def test_regla_con_restriccion_variable_a_variable(self):
+        """Una restricción puede comparar dos variables: VX >= VY."""
+        r = self._parsear("X e_mayor Y <- X e_vale VX , Y e_vale VY . [ VX >= VY ]")
+        self.assertEqual(len(r.restricciones), 1)
+        res = r.restricciones[0]
+        self.assertEqual(res.variable, "VX")
+        self.assertEqual(res.operador, ">=")
+        self.assertEqual(res.valor, "VY")  # Debe ser una string (variable)
+        self.assertIsInstance(res.valor, str)
+
     def test_regla_cuatro_antecedentes(self):
         """Regla con 4 antecedentes (como la regla de sospechoso en misterio.txt)."""
         r = self._parsear(
@@ -267,8 +277,8 @@ class TestParserPrecedencia(unittest.TestCase):
         self.assertEqual(r.precedencia, 0)
 
     def test_precedencia_no_confunde_certeza_difusa(self):
-        """'[ 1 ]' (certeza) no debe interpretarse como precedencia (solo 1 dígito)."""
-        r = self._parsear("X es sospechoso <- X es_tipo persona. [ 1 ]")
+        """'[ 1.0 ]' (certeza) no debe interpretarse como precedencia."""
+        r = self._parsear("X es sospechoso <- X es_tipo persona. [ 1.0 ]")
         self.assertAlmostEqual(r.certeza, 1.0)
         self.assertEqual(r.precedencia, 0)  # No hay precedencia
 

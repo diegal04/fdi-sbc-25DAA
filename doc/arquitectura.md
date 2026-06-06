@@ -107,7 +107,7 @@ variable    ::= [A-Z] [a-zA-Z0-9_]*
 extension   ::= "[" extension_item (";" extension_item)* "]"
 extension_item ::= precedencia | certeza | restriccion
 precedencia ::= DIGIT DIGIT DIGIT          (* exactamente 3 dígitos, 000-999 *)
-certeza     ::= "0." DIGIT+  |  "1"        (* número difuso en [0,1] *)
+certeza     ::= "0." DIGIT+  |  "1.0"      (* número difuso en [0,1] *)
 restriccion ::= variable operador entero
 operador    ::= "<=" | ">=" | "<" | ">" | "="
 
@@ -117,7 +117,7 @@ consulta    ::= tripleta "?"
 comentario  ::= "#" .* EOL                 (* ignorado en cualquier posición *)
 ```
 
-**Nota importante sobre la ambigüedad `precedencia` vs. `certeza`:** el token `100` podría leerse como el entero `1` seguido de `00`. Para evitar esto, el parser intenta `precedencia` (3 dígitos exactos) **antes** que `certeza` en la gramática.
+**Nota importante sobre la ambigüedad `precedencia` vs. `certeza`:** el token `100` podría leerse erróneamente como certeza si ésta admitiera `"1"` suelto, pero al requerir `"1.0"` (con punto decimal) la ambigüedad desaparece. El parser sigue intentando `precedencia` (3 dígitos exactos) **antes** que `certeza` por robustez.
 
 ---
 

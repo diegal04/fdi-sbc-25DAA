@@ -170,7 +170,7 @@ def procesar_entrada(texto: str) -> bool:
                     if not vars_consulta:
                         certeza_max = max(r[1] for r in resultados)
                         console.print(
-                            f"[bold green]HIPÓTESIS CONFIRMADA[/bold green] [dim](Certeza: {certeza_max:.2f})[/dim]"
+                            f"[bold green]HIPÓTESIS CONFIRMADA[/bold green] [dim](Certeza: {'1.0' if certeza_max == 1.0 else f'{certeza_max:.2f}'})[/dim]"
                         )
                     else:
                         console.print(
@@ -187,7 +187,7 @@ def procesar_entrada(texto: str) -> bool:
                             )
                             if linea and linea not in mostrados:
                                 console.print(
-                                    f"  {linea} [dim](Certeza: {certeza:.2f})[/dim]"
+                                    f"  {linea} [dim](Certeza: {'1.0' if certeza == 1.0 else f'{certeza:.2f}'})[/dim]"
                                 )
                                 mostrados.add(linea)
             else:
@@ -214,7 +214,7 @@ def procesar_entrada(texto: str) -> bool:
                         # Caso A: Pregunta directa de Sí/No
                         certeza = max(r[1] for r in resultados)
                         console.print(
-                            f"[bold green]VERDADERO[/bold green] [dim](Certeza: {certeza:.2f})[/dim]"
+                            f"[bold green]VERDADERO[/bold green] [dim](Certeza: {'1.0' if certeza == 1.0 else f'{certeza:.2f}'})[/dim]"
                         )
                     else:
                         # Caso B: Pregunta de rellenar huecos (Variables)
@@ -230,7 +230,7 @@ def procesar_entrada(texto: str) -> bool:
                                 ]
                             )
                             console.print(
-                                f"  {linea_sust} [dim](Certeza: {certeza:.2f})[/dim]"
+                                f"  {linea_sust} [dim](Certeza: {'1.0' if certeza == 1.0 else f'{certeza:.2f}'})[/dim]"
                             )
 
     except ParseException:

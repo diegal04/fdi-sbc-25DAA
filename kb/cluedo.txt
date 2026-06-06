@@ -215,9 +215,9 @@ A es pesada <- A peso_gramos G. [ G > 800 ]
 A puede_causar contusion <- A es contundente, A es pesada. [ 0.90 ]
 
 # Tipo de dano segun la naturaleza intrinseca del arma
-A puede_causar herida_cortante  <- A es cortante.      [ 1 ]
-A puede_causar estrangulamiento <- A es estrangulante. [ 1 ]
-A puede_causar herida_de_bala   <- A es de_fuego.      [ 1 ]
+A puede_causar herida_cortante  <- A es cortante.      [ 1.0 ]
+A puede_causar estrangulamiento <- A es estrangulante. [ 1.0 ]
+A puede_causar herida_de_bala   <- A es de_fuego.      [ 1.0 ]
 
 
 # ==============================================================================
@@ -234,10 +234,10 @@ A es_arma_vinculante crimen <- A esta_en Lugar,
                                 victima fue_hallada_en Lugar. [ 0.55 ]
 
 # El arma coincide con la herida (Desglosado para permitir Encadenamiento Hacia Atrás)
-A coincide_herida crimen <- A puede_causar contusion, victima sufre contusion. [ 1 ]
-A coincide_herida crimen <- A puede_causar herida_cortante, victima sufre herida_cortante. [ 1 ]
-A coincide_herida crimen <- A puede_causar estrangulamiento, victima sufre estrangulamiento. [ 1 ]
-A coincide_herida crimen <- A puede_causar herida_de_bala, victima sufre herida_de_bala. [ 1 ]
+A coincide_herida crimen <- A puede_causar contusion, victima sufre contusion. [ 1.0 ]
+A coincide_herida crimen <- A puede_causar herida_cortante, victima sufre herida_cortante. [ 1.0 ]
+A coincide_herida crimen <- A puede_causar estrangulamiento, victima sufre estrangulamiento. [ 1.0 ]
+A coincide_herida crimen <- A puede_causar herida_de_bala, victima sufre herida_de_bala. [ 1.0 ]
 
 # Arma homicida confirmada
 A es_arma_homicida crimen <- A coincide_herida crimen,
@@ -251,8 +251,8 @@ A es_arma_homicida crimen <- A coincide_herida crimen,
 # aunque no estuviera directamente en esa habitacion.
 
 # La conexion entre habitaciones es bidireccional
-H es_accesible_desde G <- H conecta_con G. [ 1 ]
-H es_accesible_desde G <- G conecta_con H. [ 1 ]
+H es_accesible_desde G <- H conecta_con G. [ 1.0 ]
+H es_accesible_desde G <- G conecta_con H. [ 1.0 ]
 
 # Accesibilidad transitiva (2 saltos): apoyada en hechos fijos, sin recursividad infinita
 H es_accesible_desde G <- H conecta_con I, 
@@ -271,7 +271,7 @@ P pudo_acceder crimen <- P ubicacion_crimen H,
 
 # Estaba en la escena: su ubicacion a la hora del crimen coincide con la escena
 P estaba_en_escena crimen <- P ubicacion_crimen Lugar,
-                              victima fue_hallada_en Lugar. [ 1 ]
+                              victima fue_hallada_en Lugar. [ 1.0 ]
 
 # Estuvo en la mansion durante el crimen segun los registros horarios
 P estuvo_en_mansion crimen <- P llega_mansion LlegaH,

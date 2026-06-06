@@ -669,7 +669,7 @@ class TestLogicaDifusa(unittest.TestCase):
 
     def test_certeza_uno_no_degrada(self):
         """Con todos los hechos y regla a certeza 1.0, el resultado debe ser 1.0."""
-        kb = "hecho es p.\nresultado es q <- hecho es p. [ 1 ]\n"
+        kb = "hecho es p.\nresultado es q <- hecho es p. [ 1.0 ]\n"
         memoria, motor = _cargar_kb(kb)
         motor.encadenamiento_hacia_adelante()
         h = _buscar(memoria, "resultado", "es", "q")
@@ -685,7 +685,7 @@ class TestLogicaDifusa(unittest.TestCase):
             "a1 es p.\n"
             "a2 es q. [ 0.3 ]\n"
             "a3 es r.\n"
-            "resultado es z <- a1 es p, a2 es q, a3 es r. [ 1 ]\n"
+            "resultado es z <- a1 es p, a2 es q, a3 es r. [ 1.0 ]\n"
         )
         memoria, motor = _cargar_kb(kb)
         motor.encadenamiento_hacia_adelante()
@@ -702,8 +702,8 @@ class TestLogicaDifusa(unittest.TestCase):
         kb = (
             "base es p. [ 0.9 ]\n"
             "base2 es p. [ 0.3 ]\n"
-            "resultado es q <- base es p. [ 1 ]\n"
-            "resultado es q <- base2 es p. [ 1 ]\n"
+            "resultado es q <- base es p. [ 1.0 ]\n"
+            "resultado es q <- base2 es p. [ 1.0 ]\n"
         )
         memoria, motor = _cargar_kb(kb)
         motor.encadenamiento_hacia_adelante()
