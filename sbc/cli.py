@@ -139,10 +139,7 @@ def procesar_entrada(texto: str) -> bool:
         elif isinstance(resultado, Consulta):
             if resultado.razona_si:
                 # --- ENCADENAMIENTO HACIA ATRÁS ACTIVADO ---
-                console.print(
-                    f"[bold yellow]Razonando: {resultado.tripleta.sujeto} {resultado.tripleta.predicado} {resultado.tripleta.objeto}[/bold yellow]"
-                )
-
+            
                 generador = motor.encadenamiento_hacia_atras(resultado.tripleta)
                 resultados = list(generador)
 
@@ -161,7 +158,7 @@ def procesar_entrada(texto: str) -> bool:
                     # Mensajes de error personalizados según el tipo de pregunta
                     if not vars_consulta:
                         console.print(
-                            "[bold red]HIPÓTESIS DENEGADA[/bold red] (No hay pruebas para demostrarlo)"
+                            "[bold red]FALSO[/bold red] (No hay pruebas para demostrarlo)"
                         )
                     else:
                         console.print(
@@ -171,7 +168,7 @@ def procesar_entrada(texto: str) -> bool:
                     if not vars_consulta:
                         certeza_max = max(r[1] for r in resultados)
                         console.print(
-                            f"[bold green]HIPÓTESIS CONFIRMADA[/bold green] [dim](Certeza: {'1.0' if certeza_max == 1.0 else f'{certeza_max:.2f}'})[/dim]"
+                            f"[bold green]VERDADERO[/bold green] [dim](Certeza: {'1.0' if certeza_max == 1.0 else f'{certeza_max:.2f}'})[/dim]"
                         )
                     else:
                         console.print(
@@ -198,7 +195,7 @@ def procesar_entrada(texto: str) -> bool:
 
                 if not resultados:
                     console.print(
-                        "[bold red]FALSO / DESCONOCIDO[/bold red] (No se encuentra en la memoria)"
+                        "[bold red]FALSO[/bold red] (No se encuentra en la memoria)"
                     )
                 else:
                     # Comprobamos si la pregunta del usuario incluía variables (Mayúsculas)
