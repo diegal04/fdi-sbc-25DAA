@@ -54,7 +54,7 @@ Escribe `ayuda!` en cualquier momento para ver un resumen de comandos dentro del
 
 | Comando | Descripción |
 |---|---|
-| `cargar! <ruta>` | Carga una base de conocimiento desde un fichero `.txt`. Ejemplo: `cargar! KB.txt`. Si se omite la ruta usa `kb/cluedo.txt` por defecto. |
+| `cargar! <ruta>` | Carga una base de conocimiento desde un **fichero** `.txt` o desde una **carpeta** (concatena en orden alfabético todos los `.txt` que contiene). Ejemplo: `cargar! KB.txt` o `cargar! kb/`. Si se omite la ruta usa `kb/cluedo.txt` por defecto. |
 | `descubrir!` | Ejecuta el **encadenamiento hacia adelante** y satura la memoria con todos los hechos deducibles. |
 | `memoria!` | Muestra todos los hechos actualmente en memoria (con sus certezas) y la lista de reglas cargadas. |
 | `ayuda!` | Muestra el manual de ayuda dentro del sistema. |
@@ -92,6 +92,12 @@ Este tutorial resuelve el caso completo paso a paso.
 
 ```
 SBC> cargar! kb/cluedo.txt
+```
+
+También puedes apuntar directamente a la carpeta; se cargarán todos los `.txt` en orden alfabético:
+
+```
+SBC> cargar! kb/kb-optativa
 ```
 
 Salida esperada:

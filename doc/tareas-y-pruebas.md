@@ -39,13 +39,14 @@ El proyecto implementa un sistema experto completo. Las funcionalidades se organ
 
 **Capacidades:**
 - Carga de ficheros `.txt` (UTF-8, `parse_all=True`).
+- Carga de **directorios**: si la ruta apunta a una carpeta, concatena en orden alfabético todos los `.txt` que contiene (los demás tipos de archivo se ignoran) y los parsea como si fueran uno solo.
 - Aserción de hechos: inserta nuevo o actualiza certeza (solo si la nueva es mayor).
 - Retractación de hechos mediante negación (`no hecho.`).
 - Deduplicación de hechos y reglas.
 - Ordenación automática de reglas por precedencia descendente.
 - Acumulación de conocimiento desde múltiples ficheros.
 
-**Tests:** `test/test_memoria.py` — 4 clases, ~28 tests.
+**Tests:** `test/test_memoria.py` — 5 clases, ~38 tests.
 
 ---
 
@@ -179,7 +180,7 @@ uv run python -m unittest test.test_motor.TestEncadenamientoAdelante.test_tarea3
 
 **Resultado esperado:**
 ```
-Ran 150 tests in ~0.7s
+Ran 160 tests in ~0.7s
 OK
 ```
 
@@ -191,10 +192,10 @@ OK
 test/
 ├── __init__.py
 ├── test_parser.py    — 5 clases,  ~45 tests   → gramática y dataclasses
-├── test_memoria.py   — 4 clases,  ~28 tests   → gestión de estado
+├── test_memoria.py   — 5 clases,  ~38 tests   → gestión de estado
 └── test_motor.py     — 13 clases, ~77 tests   → algoritmos de inferencia
                                     ──────────
-                                    ~150 tests totales
+                                    ~160 tests totales
 ```
 
 ---
@@ -219,6 +220,7 @@ test/
 | `TestMemoriaAgregarHecho` | 12 | Inserción, duplicado, actualización de certeza (solo sube), retractación de existente, retractación de inexistente, retractación selectiva |
 | `TestMemoriaAgregarRegla` | 3 | Inserción, duplicado, acumulación de reglas distintas |
 | `TestMemoriaLimpiar` | 2 | Limpieza de `cluedo.txt`, limpieza de memoria vacía |
+| `TestMemoriaCargarDirectorio` | 10 | Carga de directorio con múltiples `.txt`, ignora archivos no-`.txt`, directorio vacío devuelve `False`, directorio inexistente devuelve `False`, orden alfabético garantizado, error sintáctico en un fichero falla todo, acumulación sobre memoria previa |
 
 ### `test/test_motor.py`
 

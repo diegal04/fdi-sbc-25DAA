@@ -50,7 +50,7 @@ def procesar_entrada(texto: str) -> bool:
         console.print("   [cyan]razona si coronel_mostaza es asesina?[/cyan]")
         console.print("[bold]5. Comandos del sistema:[/bold]")
         console.print(
-            r"   [yellow]cargar! \[archivo][/yellow] : Carga el archivo txt (por defecto kb/cluedo.txt)."
+            r"   [yellow]cargar! \[ruta][/yellow]  : Carga un fichero .txt o todos los .txt de una carpeta (por defecto kb/cluedo.txt)."
         )
         console.print(
             "   [yellow]descubrir![/yellow]       : Ejecuta encadenamiento hacia adelante."

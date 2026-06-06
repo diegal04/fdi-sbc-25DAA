@@ -1,0 +1,35 @@
+# --------------------------------------------------------- 
+# GENERACIÓN DE RESIDUOS (Inventario de Empresa)
+# --------------------------------------------------------- 
+
+# Asignamos cantidades a los residuos con nombres reales
+cajas_embalaje_carton       cantidad alta . 
+botellas_vidrio             cantidad baja . 
+envases_plastico_pet        cantidad media .   
+restos_comida_comedor       cantidad alta .  
+disolventes_limpieza        cantidad baja .   
+virutas_metalicas           cantidad media . 
+uniformes_textiles_viejos   cantidad baja .   
+palets_madera_rotos         cantidad media .   
+pilas_alcalinas             cantidad baja .   
+ordenadores_obsoletos       cantidad baja . 
+escombros_obra_menor        cantidad alta .   
+aceite_motor_usado          cantidad media .  
+biomasa_lignocelulosica     cantidad alta .     #(Orgánico no bio para pirólisis)
+papel_taller                cantidad baja .  
+ventanas_rotas              cantidad media .  
+vajilla_ceramica_rota       cantidad baja .   
+bobinas_madera_industrial   cantidad alta .     
+toner_impresora             cantidad baja .     
+tubos_fluorescentes         cantidad baja . 
+cartuchos_tinta             cantidad baja .
+sprays_aerosol_vacios       cantidad baja .
+trapos_impregnados          cantidad baja .
+botes_pintura_restos        cantidad baja .
+baterias_litio              cantidad baja .
+moviles_rotos               cantidad baja .
+cables_electricos           cantidad media .
+latas_refresco              cantidad media .
+cajas_pizza_sucias          cantidad media .
+posos_cafe                  cantidad alta .
+restos_jardineria           cantidad alta .

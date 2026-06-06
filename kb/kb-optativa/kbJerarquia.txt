@@ -1,0 +1,9 @@
+# --------------------------------------------------------- 
+# JERARQUÍA DE RESIDUOS
+# --------------------------------------------------------- 
+
+minimizacion  prioridad maxima .
+reutilizacion prioridad alta .
+reciclaje     prioridad media .
+valorizacion  prioridad baja .
+eliminacion   prioridad minima .

@@ -1,0 +1,25 @@
+# --------------------------------------------------------- 
+# INFORMACIÓN ESPECÍFICA DEL USUARIO 
+# --------------------------------------------------------- 
+
+# 1. OBJETIVOS PRIORITARIOS (el usuario elige)
+
+# usuario define_prioridad reduccion_costos .
+usuario define_prioridad minimizacion_impacto .
+
+empresa prioridad Prioridad <- usuario define_prioridad Prioridad .
+
+# 2. CONTRATOS CON LOS PLANTAS (el usuario indica si su empresa tiene contrato con cierta planta)
+
+usuario define_contrato planta_reciclaje .
+usuario define_contrato planta_raee .
+usuario define_contrato planta_anaerobica .
+usuario define_contrato planta_de_pirolisis .
+
+#usuario define_no_contrato planta_reciclaje .
+#usuario define_no_contrato planta_raee .
+#usuario define_no_contrato planta_anaerobica .
+#usuario define_no_contrato planta_de_pirolisis .
+
+empresa contrato Contrato <- usuario define_contrato Contrato .
+empresa no_contrato Contrato <- usuario define_no_contrato Contrato .

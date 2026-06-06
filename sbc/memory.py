@@ -22,12 +22,20 @@ class Memoria:
         self.reglas: List[Regla] = []
 
     def cargar_archivo(self, ruta_archivo: str | Path) -> bool:
-        """Lee un fichero txt y carga su conocimiento en memoria."""
+        """Lee un fichero .txt (o todos los .txt de una carpeta) y carga su conocimiento en memoria.
+
+        Si ``ruta_archivo`` apunta a un directorio, concatena en orden alfabético todos
+        los archivos con extensión ``.txt`` que contiene y los carga como si fueran uno solo.
+        Cualquier otro tipo de archivo dentro del directorio es ignorado.
+        """
         ruta = Path(ruta_archivo)
 
         if not ruta.exists():
-            logger.error(f"No se ha encontrado el archivo de conocimiento: {ruta}")
+            logger.error(f"No se ha encontrado el archivo o directorio de conocimiento: {ruta}")
             return False
+
+        if ruta.is_dir():
+            return self._cargar_directorio(ruta)
 
         try:
             # Obligamos a leer en UTF-8, requisito técnico estricto de las normas
@@ -54,6 +62,46 @@ class Memoria:
             # esto imprimirá exactamente en qué línea y columna está el error. ¡Le encantará!
             logger.error(
                 f"Error de sintaxis en {ruta.name} (Línea {e.lineno}, Columna {e.col}):\n{e.line}"
+            )
+            return False
+
+    def _cargar_directorio(self, directorio: Path) -> bool:
+        """Carga todos los .txt de un directorio concatenándolos en orden alfabético."""
+        archivos = sorted(directorio.glob("*.txt"))
+
+        if not archivos:
+            logger.warning(f"No se encontraron archivos .txt en el directorio: {directorio}")
+            return False
+
+        textos = []
+        for archivo in archivos:
+            try:
+                textos.append(archivo.read_text(encoding="utf-8"))
+            except OSError as e:
+                logger.error(f"Error leyendo {archivo.name}: {e}")
+                return False
+
+        texto_combinado = "\n".join(textos)
+
+        try:
+            resultados = archivo_parser.parse_string(texto_combinado, parse_all=True)
+
+            for item in resultados:
+                if isinstance(item, Hecho):
+                    self.agregar_hecho(item)
+                elif isinstance(item, Regla):
+                    self.agregar_regla(item)
+
+            logger.success(
+                f"Cargados {len(self.hechos)} hechos y {len(self.reglas)} reglas "
+                f"desde {len(archivos)} archivo(s) en {directorio.name}/"
+            )
+            return True
+
+        except ParseException as e:
+            logger.error(
+                f"Error de sintaxis en directorio {directorio.name} "
+                f"(Línea {e.lineno}, Columna {e.col}):\n{e.line}"
             )
             return False
 
