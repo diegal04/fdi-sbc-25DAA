@@ -32,7 +32,8 @@ fdi-sbc-25DAA/
 
 ```bash
 uv sync                  # instala dependencias
-uv run -m sbc.cli        # arranca la consola interactiva
+uv run -m sbc.cli        # arranca la consola (carga kb/cluedo.txt por defecto)
+uv run -m sbc.cli --kb ruta/kb.txt  # arranca con una KB personalizada
 uv run python -m unittest discover test   # ejecuta los tests
 ```
 

@@ -35,16 +35,33 @@ uv sync
 uv run -m sbc.cli
 ```
 
+Esto cargará automáticamente la base de conocimiento por defecto `kb/cluedo.txt` al iniciar.
+
+Si prefieres especificar una base de conocimiento diferente, usa el parámetro `--kb`:
+
+```bash
+uv run -m sbc.cli --kb ruta/otrakb.txt
+```
+
 Al arrancar se muestra el prompt interactivo:
 
 ```
 === SISTEMA EXPERTO: AGENCIA DE DETECTIVES ===
 Escribe un hecho (.), una consulta (?), o un comando (cargar!, descubrir!, memoria!, ayuda!, salir!)
+Base de conocimiento cargada desde: kb/cluedo.txt
 
 SBC>
 ```
 
 Escribe `ayuda!` en cualquier momento para ver un resumen de comandos dentro del propio sistema.
+
+---
+
+## Parámetros de línea de comandos
+
+| Parámetro | Descripción |
+|---|---|
+| `--kb <ruta>` | Especifica la ruta de la base de conocimiento a cargar al iniciar. Puede ser un fichero `.txt` o una carpeta. Por defecto: `kb/cluedo.txt`. Ejemplos: `uv run -m sbc.cli --kb kb/cluedo.txt` o `uv run -m sbc.cli --kb kb/kb-optativa`. |
 
 ---
 

@@ -198,7 +198,19 @@ El backward chaining produce resultados bajo demanda sin precomputar el árbol c
 
 ## Módulo `sbc.cli`
 
-Bucle REPL construido con `click` (punto de entrada) y `rich` (salida formateada con color). El parser combinado `hecho_parser | reglas_parser | consulta_parser` intenta clasificar cada línea de entrada:
+Bucle REPL construido con `click` (punto de entrada) y `rich` (salida formateada con color).
+
+### Parámetros de línea de comandos
+
+| Parámetro | Tipo | Por defecto | Descripción |
+|---|---|---|---|
+| `--kb` | `PATH` | `kb/cluedo.txt` | Ruta de la base de conocimiento a cargar al iniciar. Puede ser un fichero `.txt` o una carpeta. |
+
+Al iniciar, el CLI carga automáticamente la base de conocimiento especificada en el parámetro `--kb`. Si se omite, usa `kb/cluedo.txt`.
+
+### Procesamiento de entrada
+
+El parser combinado `hecho_parser | reglas_parser | consulta_parser` intenta clasificar cada línea de entrada:
 
 1. Si es un `Hecho` → asertar/revocar en memoria.
 2. Si es una `Regla` → registrar en memoria.

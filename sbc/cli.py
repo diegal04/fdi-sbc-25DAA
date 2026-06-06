@@ -242,13 +242,25 @@ def procesar_entrada(texto: str) -> bool:
 
 
 @click.command()
-def iniciar_cli():
+@click.option(
+    "--kb",
+    type=click.Path(exists=False),
+    default="kb/cluedo.txt",
+    help="Ruta de la base de conocimiento a cargar al iniciar. Por defecto: kb/cluedo.txt",
+)
+def iniciar_cli(kb):
     """Punto de entrada principal de la aplicación."""
     console.print(
         "\n[bold cyan]=== SISTEMA EXPERTO: AGENCIA DE DETECTIVES ===[/bold cyan]"
     )
     console.print(
         "[dim]Escribe un hecho (.), una consulta (?), o un comando (cargar!, descubrir!, memoria!, ayuda!, salir!)[/dim]\n"
+    )
+
+    # Cargar la base de conocimiento especificada
+    memoria.cargar_archivo(kb)
+    console.print(
+        f"[dim]Base de conocimiento cargada desde: {kb}[/dim]\n"
     )
 
     while True:
