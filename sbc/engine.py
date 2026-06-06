@@ -96,6 +96,9 @@ class MotorInferencia:
     def encadenamiento_hacia_adelante(self) -> int:
         hechos_descubiertos = 0
         modificado = True
+        
+        # 1. Registro de Intocables (Control de Exclusión Mutua)
+        control_precedencia = {}
 
         while modificado:
             modificado = False
@@ -107,6 +110,13 @@ class MotorInferencia:
                         continue
 
                     nueva_tripleta = sustituir(regla.consecuente, sustitucion)
+                    
+                    # 2. Clave de Conflicto y Bloqueo (El "Corte")
+                    clave_conflicto = (nueva_tripleta.sujeto, nueva_tripleta.predicado)
+                    if clave_conflicto in control_precedencia:
+                        if control_precedencia[clave_conflicto] > regla.precedencia:
+                            continue  # Abortar: una regla con más prioridad ya definió esto
+
                     certeza_final = certeza_antecedentes * regla.certeza
                     nuevo_hecho = Hecho(tripleta=nueva_tripleta, certeza=certeza_final)
 
@@ -130,6 +140,9 @@ class MotorInferencia:
                         )
                         hechos_descubiertos += 1
                         modificado = True
+
+                    # 3. Registrar Nivel de Autoridad
+                    control_precedencia[clave_conflicto] = regla.precedencia
 
         return hechos_descubiertos
 
