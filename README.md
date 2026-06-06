@@ -57,3 +57,9 @@ SBC> razona si X es_arma_homicida crimen?
 | `<tripleta>?` | Consulta directa en memoria |
 | `<tripleta>.` / `no <tripleta>.` | Aserción / retractación de hechos |
 | `memoria!` | Muestra el estado actual de la memoria |
+
+## Autor
+
+**Diego Alonso Arceiz**  
+Correo UCM: [diegal04@ucm.es](mailto:diegal04@ucm.es)  
+Usuario GitHub: [@diegal04](https://github.com/diegal04)
