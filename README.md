@@ -10,6 +10,7 @@ Motor de inferencia basado en reglas de producción implementado en Python. Sopo
 | [doc/dominio-cluedo.md](doc/dominio-cluedo.md) | El caso, la KB, la cadena de inferencia y las certezas |
 | [doc/manual-usuario.md](doc/manual-usuario.md) | Instalación, referencia de comandos y tutorial paso a paso |
 | [doc/tareas-y-pruebas.md](doc/tareas-y-pruebas.md) | Tareas resueltas y descripción de la suite de tests |
+| [doc/kb-optativa.md](doc/kb-optativa.md) | Base de conocimiento optativa: Sistema de gestión de residuos y reciclaje |
 
 ## Estructura del repositorio
 
@@ -17,7 +18,8 @@ Motor de inferencia basado en reglas de producción implementado en Python. Sopo
 fdi-sbc-25DAA/
 ├── doc/           ← documentación técnica
 ├── kb/            ← bases de conocimiento (.txt)
-│   └── cluedo.txt ← caso principal (100 hechos, 46 reglas)
+│   ├── cluedo.txt ← caso principal (100 hechos, 46 reglas)
+│   └── kb-optativa/  ← base de conocimiento optativa (reciclaje)
 ├── sbc/           ← código fuente
 │   ├── parser.py  ← gramática EBNF con pyparsing
 │   ├── memory.py  ← gestión de hechos y reglas
