@@ -1,0 +1,52 @@
+# ==============================================================================
+# TEST DE INTEGRACIÓN: CASO MANSION BLACKWOOD
+# ==============================================================================
+
+# 1. ENCADENAMIENTO HACIA ATRAS (GOAL-DRIVEN) Y ARITMETICA
+# El reverendo salió a las 22:00 (crimen a las 22:15). Inferencia hacia atrás.
+razona si reverendo_verde es_inocente crimen ?
+T
+
+razona si doctor_orquideo es_inocente crimen ?
+T
+
+razona si senora_pavo_real es_inocente crimen ?
+F
+
+# 2. ENCADENAMIENTO HACIA ADELANTE (DATA-DRIVEN)
+# Ponemos al motor a deducir todo el árbol de una sola vez.
+descubrir!
+
+# 3. PRECEDENCIA Y EXCLUSIÓN MUTUA
+# La regla de descarte [999] debe haber cortado el árbol para los inocentes.
+reverendo_verde es_inocente crimen ?
+T
+
+# Por tanto, es imposible que el motor lo acuse de ser culpable.
+reverendo_verde es_culpable crimen ?
+F
+
+senora_pavo_real es_inocente crimen ?
+F
+
+# 4. LÓGICA DIFUSA Y EVALUACIÓN DE PRUEBAS
+# El candelabro es contundente y pesa 1800g (> 800g), coincide con la herida.
+candelabro es_arma_homicida crimen ?
+T
+
+# Visualización del arrastre de la T-Norma del mínimo (sangre y huellas)
+X es_arma_homicida crimen ?
+! Debe salir 'X = candelabro' y 'X = llave_inglesa' con una certeza difusa menor a 1.0 (0.77 candelabro, 0.19 llave_inglesa)
+
+# 5. RESOLUCIÓN DEL CASO: ACUSACIÓN FINAL
+# El Coronel Mostaza no tiene coartada, dejó huellas y tiene móvil de deuda.
+coronel_mostaza es_culpable crimen ?
+T
+
+# La profesora Ciruelo también cumple todos los requisitos físicos y de móvil.
+profesora_ciruelo es_culpable crimen ?
+T
+
+# Comprobación de todas las deducciones finales de la investigación.
+X es_culpable crimen ?
+! Deben aparecer coronel_mostaza y profesora_ciruelo con sus respectivas certezas.
