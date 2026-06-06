@@ -214,7 +214,7 @@ Bucle REPL construido con `click` (punto de entrada) y `rich` (salida formateada
 
 El sistema implementa **lógica difusa** con la T-norma mínimo y producto escalado:
 
-$$\text{certeza\_derivada} = \min(c_1, c_2, \ldots, c_n) \times \text{certeza\_regla}$$
+$$\mathrm{certeza\_derivada} = \min(c_1, c_2, \ldots, c_n) \times \mathrm{certeza\_regla}$$
 
 Donde $c_i$ son las certezas de los hechos antecedentes. Ejemplo de la KB de Cluedo:
 
