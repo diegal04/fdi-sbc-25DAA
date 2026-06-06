@@ -6,6 +6,7 @@
 3. [Estructura de la suite de pruebas](#estructura-de-la-suite-de-pruebas)
 4. [Descripción detallada por archivo](#descripción-detallada-por-archivo)
 5. [Casos de prueba funcionales sobre cluedo.txt](#casos-de-prueba-funcionales-sobre-cluedotxt)
+6. [Test de integración manual](#test-de-integración-manual)
 
 ---
 
@@ -161,6 +162,8 @@ $$\mathrm{certeza\_derivada} = \min(c_1, c_2, \ldots, c_n) \times \mathrm{certez
 
 Desde la raíz del repositorio:
 
+### Tests unitarios y funcionales
+
 ```bash
 # Ejecutar todos los tests
 uv run python -m unittest discover test
@@ -184,6 +187,24 @@ Ran 160 tests in ~0.7s
 OK
 ```
 
+### Test de integración interactivo
+
+Desde la raíz del repositorio:
+
+```bash
+chmod +x test/corregir.sh
+./test/corregir.sh test/test_integracion.txt VERDADERO FALSO "SBC>"
+```
+
+Este script:
+1. Arranca la consola del SBC automáticamente
+2. Ejecuta los comandos del fichero de test línea a línea
+3. Valida que las respuestas coincidan con lo esperado
+4. Genera un reporte indicando los tests pasados y fallidos
+
+
+Las respuestas que empiezan por '!' tienen que ser corregidas manualmente.
+
 ---
 
 ## Estructura de la suite de pruebas
@@ -191,11 +212,13 @@ OK
 ```
 test/
 ├── __init__.py
-├── test_parser.py    — 5 clases,  ~45 tests   → gramática y dataclasses
-├── test_memoria.py   — 5 clases,  ~38 tests   → gestión de estado
-└── test_motor.py     — 13 clases, ~77 tests   → algoritmos de inferencia
-                                    ──────────
-                                    ~160 tests totales
+├── test_parser.py         — 5 clases,  ~45 tests   → gramática y dataclasses
+├── test_memoria.py        — 5 clases,  ~38 tests   → gestión de estado
+├── test_motor.py          — 13 clases, ~77 tests   → algoritmos de inferencia
+├── test_integracion.txt    — test manual interactivo end-to-end (Mansión Blackwood)
+└── corregir.sh             — harness bash para ejecutar test_integracion.txt
+                                         ──────────
+                                         ~160 tests + 1 integración
 ```
 
 ---
@@ -285,3 +308,66 @@ resultados = list(motor.encadenamiento_hacia_atras(
 valores = {sust["X"] for sust, _ in resultados if "X" in sust}
 assert "coronel_mostaza" in valores
 ```
+
+---
+
+## Test de integración manual
+
+### Propósito
+
+El fichero `test/test_integracion.txt` es un **script interactivo** que reproduce manualmente los comandos de la consola REPL del SBC para validar el comportamiento end-to-end del sistema resolviendo el caso completo de la **Mansión Blackwood**.
+
+A diferencia de los tests unitarios (que prueban funciones individuales en aislamiento), este test ejercita el flujo completo del usuario:
+1. Carga la KB (cluedo.txt)
+2. Ejecuta backward chaining para descartes por coartada
+3. Ejecuta forward chaining para saturar la memoria
+4. Consulta los resultados finales
+
+### Contenido del test
+
+```
+# 1. ENCADENAMIENTO HACIA ATRAS (GOAL-DRIVEN) Y ARITMETICA
+razona si reverendo_verde es_inocente crimen ?
+→ Esperado: Sí (tiene coartada: salió a las 22:00 < 22:15)
+
+# 2. ENCADENAMIENTO HACIA ADELANTE (DATA-DRIVEN)
+descubrir!
+→ Satura la memoria con todos los hechos deducibles
+
+# 3. PRECEDENCIA Y EXCLUSIÓN MUTUA
+reverendo_verde es_inocente crimen ?
+→ Esperado: Sí (la regla de descarte [999] evita que se deduzca culpable)
+
+# 4. LÓGICA DIFUSA Y EVALUACIÓN DE PRUEBAS
+candelabro es_arma_homicida crimen ?
+→ Esperado: Sí (sangre + huellas + contundente + peso correcto)
+
+X es_arma_homicida crimen ?
+→ Esperado: candelabro (0.77), llave_inglesa (0.19)
+  (certezas inferiores a 1.0 por T-norma del mínimo)
+
+# 5. RESOLUCIÓN DEL CASO: ACUSACIÓN FINAL
+coronel_mostaza es_culpable crimen ?
+→ Esperado: Sí (sin coartada, móvil, evidencia)
+
+profesora_ciruelo es_culpable crimen ?
+→ Esperado: Sí (sin coartada, móvil, evidencia)
+
+X es_culpable crimen ?
+→ Esperado: coronel_mostaza y profesora_ciruelo con sus certezas
+```
+
+### Cómo ejecutar
+
+Desde la raíz del repositorio:
+
+```bash
+chmod +x test/corregir.sh
+./test/corregir.sh test/test_integracion.txt VERDADERO FALSO "SBC>"
+```
+
+**Parámetros:**
+- `test/test_integracion.txt`: fichero de test a ejecutar
+- `VERDADERO`: palabra que la consola emite para "verdadero" (sin respuesta esperada). Consultar [manual-usuario.md](manual-usuario.md#respuestas-sí-no)
+- `FALSO`: palabra que la consola emite para "falso"
+- `"SBC>"`: prompt esperado de la consola

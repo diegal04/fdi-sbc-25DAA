@@ -25,7 +25,12 @@ fdi-sbc-25DAA/
 │   ├── memory.py  ← gestión de hechos y reglas
 │   ├── engine.py  ← motor de inferencia (forward + backward)
 │   └── cli.py     ← consola REPL interactiva
-└── test/          ← 150 tests unitarios y funcionales
+└── test/          ← 160+ tests unitarios, funcionales e integración
+    ├── test_parser.py
+    ├── test_memoria.py
+    ├── test_motor.py
+    ├── test_integracion.txt    ← test interactivo end-to-end
+    └── corregir.sh             ← harness para validar test_integracion.txt
 ```
 
 ## Instalación y ejecución
@@ -34,7 +39,10 @@ fdi-sbc-25DAA/
 uv sync                  # instala dependencias
 uv run -m sbc.cli        # arranca la consola (carga kb/cluedo.txt por defecto)
 uv run -m sbc.cli --kb ruta/kb.txt  # arranca con una KB personalizada
-uv run python -m unittest discover test   # ejecuta los tests
+
+# Tests
+uv run python -m unittest discover test   # ejecuta todos los tests unitarios
+./test/corregir.sh test/test_integracion.txt VERDADERO FALSO "SBC>"  # test interactivo
 ```
 
 ## Uso rápido
