@@ -65,6 +65,7 @@ def procesar_entrada(texto: str) -> bool:
         # Permite "cargar! kb/archivo.txt" o usa el de por defecto
         # Usamos strip() para capturar rutas con espacios correctamente
         ruta = texto[len("cargar!") :].strip() or "kb/cluedo.txt"
+        memoria.limpiar()  # Limpiamos la memoria anterior
         memoria.cargar_archivo(ruta)
         return True
 
