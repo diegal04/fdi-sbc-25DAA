@@ -262,6 +262,7 @@ class TestMemoriaCargarDirectorio(unittest.TestCase):
 
     def tearDown(self):
         import shutil
+
         shutil.rmtree(self.tmpdir, ignore_errors=True)
 
     def _escribir_txt(self, nombre: str, contenido: str) -> Path:
@@ -292,7 +293,9 @@ class TestMemoriaCargarDirectorio(unittest.TestCase):
     def test_carga_directorio_ignora_no_txt(self):
         """Los archivos que no sean .txt (p.ej. .md, .csv) deben ser ignorados."""
         self._escribir_txt("valido.txt", "pista_a apunta_a sospechoso.\n")
-        (self.dir_path / "ignorado.md").write_text("# esto no es KB\n", encoding="utf-8")
+        (self.dir_path / "ignorado.md").write_text(
+            "# esto no es KB\n", encoding="utf-8"
+        )
         (self.dir_path / "ignorado.csv").write_text("col1,col2\n", encoding="utf-8")
         resultado = self.memoria.cargar_archivo(self.dir_path)
         self.assertTrue(resultado)

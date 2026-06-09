@@ -315,8 +315,12 @@ class TestEncadenamientoAdelante(unittest.TestCase):
 
     def test_tarea4_inocentes_descartados(self):
         """Tarea 4: doctor y reverendo son descartados y declarados inocentes."""
-        self.assertIsNotNone(_buscar(self.memoria, "doctor_orquideo", "es_inocente", "crimen"))
-        self.assertIsNotNone(_buscar(self.memoria, "reverendo_verde", "es_inocente", "crimen"))
+        self.assertIsNotNone(
+            _buscar(self.memoria, "doctor_orquideo", "es_inocente", "crimen")
+        )
+        self.assertIsNotNone(
+            _buscar(self.memoria, "reverendo_verde", "es_inocente", "crimen")
+        )
 
     # --- Tarea 2 ---
     def test_tarea2_coronel_es_sospechoso(self):
@@ -327,7 +331,9 @@ class TestEncadenamientoAdelante(unittest.TestCase):
     def test_tarea2_coronel_es_sospechoso_fuerte(self):
         """Tarea 2: coronel_mostaza vinculado + sin coartada + sospechoso → es_sospechoso_fuerte."""
         h = _buscar(self.memoria, "coronel_mostaza", "es_sospechoso_fuerte", "crimen")
-        self.assertIsNotNone(h, "coronel_mostaza debe ser deducido como sospechoso fuerte")
+        self.assertIsNotNone(
+            h, "coronel_mostaza debe ser deducido como sospechoso fuerte"
+        )
 
     # --- Tarea 3 ---
     def test_tarea3_culpable_deducido(self):
@@ -337,8 +343,12 @@ class TestEncadenamientoAdelante(unittest.TestCase):
 
     def test_tarea3_inocentes_no_son_culpables(self):
         """Tarea 3: los sospechosos con coartada NO deben ser deducidos como culpables."""
-        self.assertIsNone(_buscar(self.memoria, "doctor_orquideo", "es_culpable", "crimen"))
-        self.assertIsNone(_buscar(self.memoria, "reverendo_verde", "es_culpable", "crimen"))
+        self.assertIsNone(
+            _buscar(self.memoria, "doctor_orquideo", "es_culpable", "crimen")
+        )
+        self.assertIsNone(
+            _buscar(self.memoria, "reverendo_verde", "es_culpable", "crimen")
+        )
 
     def test_tarea5_certeza_culpable(self):
         """
@@ -400,7 +410,9 @@ class TestEncadenamientoAtras(unittest.TestCase):
     def test_consulta_variable_quien_es_culpable(self):
         """razona si X es_culpable crimen? → X debe incluir a coronel_mostaza."""
         resultados = list(
-            self.motor.encadenamiento_hacia_atras(Tripleta("X", "es_culpable", "crimen"))
+            self.motor.encadenamiento_hacia_atras(
+                Tripleta("X", "es_culpable", "crimen")
+            )
         )
         self.assertGreater(len(resultados), 0)
         valores_x = {sust.get("X") for sust, _ in resultados if "X" in sust}

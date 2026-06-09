@@ -83,9 +83,6 @@ restriccion = variable + operador + valor_restriccion
 restriccion.set_parse_action(lambda t: Restriccion(t[0], t[1], t[2]))
 
 # Precedencia: exactamente tres dígitos decimales (000-999). Mayor valor = mayor prioridad.
-# IMPORTANTE: debe ir ANTES de extension_difusa para que p.ej. "100" no sea consumido
-# como la certeza "1.0" seguida de "0" sin parsear (aunque ya no existe la ambigüedad
-# de "1" + "00", la precedencia sigue debiendo parsearse primero).
 precedencia_token = Word(srange("[0-9]"), exact=3)
 precedencia_token.set_parse_action(lambda t: int(t[0]))
 

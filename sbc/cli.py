@@ -139,7 +139,7 @@ def procesar_entrada(texto: str) -> bool:
         elif isinstance(resultado, Consulta):
             if resultado.razona_si:
                 # --- ENCADENAMIENTO HACIA ATRÁS ACTIVADO ---
-            
+
                 generador = motor.encadenamiento_hacia_atras(resultado.tripleta)
                 resultados = list(generador)
 
@@ -257,9 +257,7 @@ def iniciar_cli(kb):
 
     # Cargar la base de conocimiento especificada
     memoria.cargar_archivo(kb)
-    console.print(
-        f"[dim]Base de conocimiento cargada desde: {kb}[/dim]\n"
-    )
+    console.print(f"[dim]Base de conocimiento cargada desde: {kb}[/dim]\n")
 
     while True:
         try:

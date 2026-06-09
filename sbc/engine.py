@@ -49,7 +49,9 @@ def sustituir(tripleta: Tripleta, sust: Sustitucion) -> Tripleta:
 def evaluar_restricciones(restricciones: List[Restriccion], sust: Sustitucion) -> bool:
     for r in restricciones:
         valor_var_resuelto = _resolver(r.variable, sust)
-        valor_derecho_resuelto = _resolver(str(r.valor), sust) if isinstance(r.valor, str) else r.valor
+        valor_derecho_resuelto = (
+            _resolver(str(r.valor), sust) if isinstance(r.valor, str) else r.valor
+        )
         try:
             valor_var = int(valor_var_resuelto)
             valor_derecho = int(valor_derecho_resuelto)
@@ -96,7 +98,7 @@ class MotorInferencia:
     def encadenamiento_hacia_adelante(self) -> int:
         hechos_descubiertos = 0
         modificado = True
-        
+
         # 1. Registro de Intocables (Control de Exclusión Mutua)
         control_precedencia = {}
 
@@ -110,7 +112,7 @@ class MotorInferencia:
                         continue
 
                     nueva_tripleta = sustituir(regla.consecuente, sustitucion)
-                    
+
                     # 2. Clave de Conflicto y Bloqueo (El "Corte")
                     clave_conflicto = (nueva_tripleta.sujeto, nueva_tripleta.predicado)
                     if clave_conflicto in control_precedencia:
@@ -174,7 +176,7 @@ class MotorInferencia:
 
         # 2. CASO RECURSIVO (Buscar en reglas)
         for regla in self.memoria.reglas:
-            # MAGIA ANTI-COLISIONES: Invertimos los argumentos.
+            # ANTI-COLISIONES: Invertimos los argumentos.
             # regla.consecuente es el patrón, objetivo es el hecho a igualar.
             sust_regla = unificar(regla.consecuente, objetivo, {})
 
@@ -190,7 +192,7 @@ class MotorInferencia:
                     certeza_acumulada=1.0,
                     nivel=nivel + 1,
                 ):
-                    # APLICAMOS LA REGLA MULTIPLICANDO (¡Igual que hacia adelante!)
+                    # APLICAMOS LA REGLA MULTIPLICANDO
                     certeza_final = certeza_antecedentes * regla.certeza
                     # LIMPIEZA DE COLISIONES: Solo devolvemos al usuario las variables
                     # que originalmente estaban en su consulta.

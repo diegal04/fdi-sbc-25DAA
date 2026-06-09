@@ -31,7 +31,9 @@ class Memoria:
         ruta = Path(ruta_archivo)
 
         if not ruta.exists():
-            logger.error(f"No se ha encontrado el archivo o directorio de conocimiento: {ruta}")
+            logger.error(
+                f"No se ha encontrado el archivo o directorio de conocimiento: {ruta}"
+            )
             return False
 
         if ruta.is_dir():
@@ -58,8 +60,6 @@ class Memoria:
             return True
 
         except ParseException as e:
-            # Si el profesor mete un txt con errores a propósito para probar tu programa,
-            # esto imprimirá exactamente en qué línea y columna está el error. ¡Le encantará!
             logger.error(
                 f"Error de sintaxis en {ruta.name} (Línea {e.lineno}, Columna {e.col}):\n{e.line}"
             )
@@ -70,7 +70,9 @@ class Memoria:
         archivos = sorted(directorio.glob("*.txt"))
 
         if not archivos:
-            logger.warning(f"No se encontraron archivos .txt en el directorio: {directorio}")
+            logger.warning(
+                f"No se encontraron archivos .txt en el directorio: {directorio}"
+            )
             return False
 
         textos = []
@@ -131,7 +133,7 @@ class Memoria:
                     f"Hecho revocado: {nuevo_hecho.tripleta.sujeto} {nuevo_hecho.tripleta.predicado} {nuevo_hecho.tripleta.objeto}."
                 )
                 return True
-            return False  # <--- AÑADIDO: Si la lista mide lo mismo, no borró nada.
+            return False
 
         # 2. Es una afirmación normal. Comprobamos si ya existía para actualizar su certeza.
         for h in self.hechos:
@@ -141,11 +143,11 @@ class Memoria:
                     logger.debug(
                         f"Hecho actualizado con nueva certeza [{h.certeza}]: {h.tripleta.sujeto}"
                     )
-                return True  # <--- AÑADIDO: Salimos devolviendo éxito
+                return True
 
         # 3. Si es totalmente nuevo, lo añadimos al final de la lista.
         self.hechos.append(nuevo_hecho)
-        return True  # <--- AÑADIDO: Salimos devolviendo éxito
+        return True
 
     def limpiar(self):
         """Borra toda la memoria (útil si el usuario quiere reiniciar el sistema)."""
